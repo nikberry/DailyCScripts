@@ -8,16 +8,18 @@
 #include "THStack.h"
 #include <string.h>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include "tdrstyle.C"
 
 void doPlotsMuon();
 TH1D* getSample(TString sample, double weight);
+TText* doPrelim(float x, float y);
 
-double lumi = 5500;
+double lumi = 5800;
 //stuff to choose
 bool logPlot = false; //true for log plot
-int rebinFact = 5;
+int rebinFact = 10;
 
 //isolation selection
 //TString Isolation = "QCD No Iso/";
@@ -30,7 +32,7 @@ TString Nbtags = "2btags";  //standard  "2btags" , qcd "0btag"
 
 bool inclZ = false;
 bool inclW = false;
-
+bool inclQ = true;
 //choose object
 TString Obj = "Muon/";
 //TString Obj = "MET/";
@@ -75,7 +77,18 @@ TH1D* z2jets = getSample("DY2JetsToLL", lumi*181.0/21835749);
 TH1D* z3jets = getSample("DY3JetsToLL", lumi*51.1/11010628);
 TH1D* z4jets = getSample("DY4JetsToLL", lumi*23.04/6391785);
 
-TH1D* qcd = getSample("QCD_Pt_20_MuEnrichedPt_15", lumi*34679.3/8500505);
+TH1D* qcd = getSample("QCD_Pt_20_MuEnrichedPt_15",     lumi*34679.3/8500505);
+TH1D* qcd1 = getSample("QCD_Pt-15to20_MuEnrichedPt5",   lumi*7.022e8 * 0.0039/1722678);
+TH1D* qcd2 = getSample("QCD_Pt-20to30_MuEnrichedPt5",   lumi*2.87e8 * 0.0065/8486893);
+TH1D* qcd3 = getSample("QCD_Pt-30to50_MuEnrichedPt5",   lumi*6.609e7 * 0.0122/8928999);
+TH1D* qcd4 = getSample("QCD_Pt-50to80_MuEnrichedPt5",   lumi*8082000.0 * 0.0218/7256011);
+TH1D* qcd5 = getSample("QCD_Pt-80to120_MuEnrichedPt5",  lumi*1024000.0 * 0.0395/9030624);
+TH1D* qcd6 = getSample("QCD_Pt-120to170_MuEnrichedPt5", lumi*157800.0 * 0.0473/8500505);
+TH1D* qcd7 = getSample("QCD_Pt-170to300_MuEnrichedPt5", lumi*34020.0 * 0.0676/7662483);
+TH1D* qcd8 = getSample("QCD_Pt-300to470_MuEnrichedPt5", lumi*1757.0 * 0.0864/7797481);
+TH1D* qcd9 = getSample("QCD_Pt-470to600_MuEnrichedPt5", lumi*115.2 * 0.1024/2995767);
+TH1D* qcd10 = getSample("QCD_Pt-800to1000_MuEnrichedPt5",lumi*3.57 * 0.1033/4047142);
+TH1D* qcd11 = getSample("QCD_Pt-1000_MuEnrichedPt5",     lumi*0.774 * 0.1097/3807263);
 
 TH1D* top_t = getSample("T_t-channel", lumi*56.4/3757707);
 TH1D* top_tw = getSample("T_tW-channel", lumi*11.1/497395);
@@ -85,7 +98,22 @@ TH1D* tbar_tw = getSample("Tbar_tW-channel", lumi*11.1/493239);
 TH1D* tbar_s = getSample("Tbar_s-channel", lumi*1.76/139948);
 
 THStack *hs = new THStack("hs","test");
+  if(inclQ == true){
   hs->Add(qcd);
+  }else{
+  hs->Add(qcd1);
+  hs->Add(qcd2);
+  hs->Add(qcd3);
+  hs->Add(qcd4);
+  hs->Add(qcd5);
+  hs->Add(qcd6);
+  hs->Add(qcd7);
+  hs->Add(qcd8);
+  hs->Add(qcd9);
+  hs->Add(qcd10);
+  hs->Add(qcd11);
+  }
+  
   
   if(inclZ == true){
   hs->Add(zjets);
@@ -104,7 +132,7 @@ THStack *hs = new THStack("hs","test");
   hs->Add(w3jets);
   hs->Add(w4jets);  
   }
-  
+      
   hs->Add(top_t);
   hs->Add(top_tw);
   hs->Add(top_s);
@@ -143,7 +171,10 @@ THStack *hs = new THStack("hs","test");
 	//tleg2->AddEntry(singtEff, "single-t"      , "l");
 	//tleg2->AddEntry(singtwEff, "single-tW"      , "l");
  	tleg2->Draw("same");	
-
+	
+	TText* textPrelim = doPrelim(0.17,0.96);
+	textPrelim->Draw();
+	
   if(logPlot ==true){
   c1->SetLogy();
   }	
@@ -173,7 +204,12 @@ TH1D* getSample(TString sample, double weight){
 	TFile* file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
 	
-	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+Nbtags);
+	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"2btags");
+	TH1D* plot2 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
+	TH1D* plot3 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"4orMoreBtags");
+
+	plot->Add(plot2);
+	plot->Add(plot3);
 
         if(sample == "TTJet"){
 	plot->SetFillColor(kRed+1);
@@ -197,4 +233,20 @@ TH1D* getSample(TString sample, double weight){
 	
 	return plot;
 
+}
+
+TText* doPrelim(float x, float y)
+{
+  std::ostringstream stream;
+  stream  << "#mu, #geq 4 jets, #geq 2 b-tags               CMS Preliminary, L = 5.8 fb^{-1}";   
+
+  TLatex* text = new TLatex(x, y, stream.str().c_str());
+  //text->SetTextAlign(33);  //left
+  //text->SetTextAlign(22);  //center
+  //text->SetTextAlign(11);  //right
+  text->SetNDC(true);
+  text->SetTextFont(62);
+  text->SetTextSize(0.045);  // for thesis
+
+  return text;
 }

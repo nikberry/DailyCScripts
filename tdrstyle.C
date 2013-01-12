@@ -47,7 +47,7 @@ void setTDRStyle() {
   // tdrStyle->SetHistFillColor(1);
   // tdrStyle->SetHistFillStyle(0);
   tdrStyle->SetHistLineColor(1);
-  tdrStyle->SetHistLineStyle(2);
+  tdrStyle->SetHistLineStyle(0);
   tdrStyle->SetHistLineWidth(1);
   // tdrStyle->SetLegoInnerR(Float_t rad = 0.5);
   // tdrStyle->SetNumberContours(Int_t number = 20);
@@ -113,15 +113,15 @@ void setTDRStyle() {
   tdrStyle->SetTitleSize(0.06, "XYZ");
   // tdrStyle->SetTitleXSize(Float_t size = 0.02); // Another way to set the size?
   // tdrStyle->SetTitleYSize(Float_t size = 0.02);
-  //tdrStyle->SetTitleXOffset(1.5);
-  //tdrStyle->SetTitleYOffset(3.5);
-  tdrStyle->SetTitleOffset(0.9, "Y"); // Another way to set the Offset
+  tdrStyle->SetTitleXOffset(1.2);
+  tdrStyle->SetTitleYOffset(1.25);
+  // tdrStyle->SetTitleOffset(1.1, "Y"); // Another way to set the Offset
 
 // For the axis labels:
 
   tdrStyle->SetLabelColor(1, "XYZ");
   tdrStyle->SetLabelFont(42, "XYZ");
-  tdrStyle->SetLabelOffset(0.005, "XYZ");
+  tdrStyle->SetLabelOffset(0.007, "XYZ");
   tdrStyle->SetLabelSize(0.05, "XYZ");
 
 // For the axis:

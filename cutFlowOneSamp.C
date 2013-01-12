@@ -17,9 +17,9 @@ void weightHisto(TH1D* sample, double lumi, double xsect, double NEvts);
 void cutFlowOneSamp(){
 
 	bool muon = true;
-	bool scale = false;
+	bool scale = true;
 
-double lumi = 5050;
+double lumi = 5800;
 
 TH1D* tt = getSample("TTJet", muon);
 TH1D* ttEff = new TH1D("cut eff","cut eff",10,0,10);
@@ -73,8 +73,8 @@ printCutflow("$\\geq$2 btags &  ", 12, tt);
 }
 
 TH1D* getSample(TString sample, bool muon){
-	TString dir = "../";
-	TFile* tt_file = new TFile(dir + sample + "_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET_SYNCH.root");
+	TString dir = "rootFiles/";
+	TFile* tt_file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	TDirectoryFile* tt_folder = (TDirectoryFile*) tt_file->Get("EventCount");
 	TH1D* tt_cutflow;
 	if(muon == true){

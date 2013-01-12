@@ -12,14 +12,14 @@
 #include <iomanip>
 #include "tdrstyle.C"
 
-void doPlotsMET();
+void allCutFlow();
 TH1D* getSample(TString sample, double weight);
 TText* doPrelim(float x, float y);
 
 double lumi = 5800;
 //stuff to choose
-bool logPlot = false; //true for log plot
-
+bool logPlot = true; //true for log plot
+int rebinFact = 1;
 
 //isolation selection
 //TString Isolation = "QCD No Iso/";
@@ -28,32 +28,28 @@ TString Isolation = "Ref selection/";
 //TString Isolation = "QCD non iso mu+jets/";
 
 // number of btags
-TString Nbtags = "2btags";  //standard  "2btags" , qcd "0btag"
+TString Nbtags = "";  //standard  "2btags" , qcd "0btag"
 
 bool inclZ = false;
 bool inclW = false;
 bool inclQ = true;
-
 //choose object
-//TString Obj = "Muon/";
-TString Obj = "MET/patType1CorrectedPFMet/";
+TString Obj = "Muon/";
+//TString Obj = "MET/";
 
 //muon variables
-const int N = 5;
+const int N = 2;
 TString Variable;
-TString Variables[N] = {"DeltaPhi_lepton_MET_", "Transverse_Mass_", "METsignificance_", "MET_", "MET_phi_"};
-double MinXs[N] = {0, 0, 0, 0, -3.5};
-double MaxXs[N] = {3.4, 300, 300, 300,3.5};
-TString XTitles[N] = {"#Delta#Phi(E_{T}^{miss}, #mu)", "M_{T}(E_{T}^{miss})", "E_{T}^{miss} significance", "E_{T}^{miss}", "#phi (E_{T}^{miss})"};
-int rebinFact[N] = {5,5,5,5,1};
-int Var;
-
+TString Variables[N] = {"TTbarMuPlusJetsRefSelection", "TTbarMuPlusJetsRefSelectionUnweighted"};
+double MinXs[N] = {0,-2.6 };
+double MaxXs[N] = {2.6,2.6 };
+TString XTitles[N] = {"Cuts", "Cuts"};
 
 //met variables
 //TString Variable = "patType1CorrectedPFMet/MET_";
 
 
-void doPlotsMET(){
+void allCutFlow(){
 setTDRStyle();
 
 //loop over variables
@@ -62,8 +58,6 @@ double MinX = MinXs[i];
 double MaxX = MaxXs[i];
 Variable = Variables[i];
 TString Xtitle = XTitles[i];
-
-Var = i;
 
 //Data
 TH1D* data = getSample("SingleMu", 1);
@@ -148,17 +142,19 @@ THStack *hs = new THStack("hs","test");
   
   hs->Add(tt);
 
-
   //draw histos to files
   TCanvas *c1 = new TCanvas("Plot","Plot",900, 600);
 		
   hs->SetMaximum(data->GetBinContent(data->GetMaximumBin())*1.3);
-
+  
+  if(logPlot ==true)
+  hs->SetMinimum(100.);
+  
   hs->Draw();
   data->Draw("E same");
   data->SetMarkerStyle(20);
   
-  hs->GetXaxis()->SetLimits(MinX, MaxX);
+//  hs->GetXaxis()->SetLimits(MinX, MaxX);
   hs->GetXaxis()->SetTitle(Xtitle); hs->GetXaxis()->SetTitleSize(0.05);
   hs->GetYaxis()->SetTitle("Number of Events");hs->GetYaxis()->SetTitleSize(0.05);
   
@@ -170,10 +166,12 @@ THStack *hs = new THStack("hs","test");
 	tleg2->SetFillColor(10);
 	tleg2->AddEntry(data , "2012 data", "lpe");
 	tleg2->AddEntry(tt , "t#bar{t}", "lf");
-	tleg2->AddEntry(top_t, "single top"      , "lf");
+	tleg2->AddEntry(top_t, "single top", "lf");
 	tleg2->AddEntry(wjets , "w+jets", "lf");
 	tleg2->AddEntry(zjets , "z+jets", "lf");
-	tleg2->AddEntry(qcd, "QCD"      , "lf");
+	tleg2->AddEntry(qcd , "QCD", "lf");
+	
+	//tleg2->AddEntry(singtEff, "single-t"      , "l");
 	//tleg2->AddEntry(singtwEff, "single-tW"      , "l");
  	tleg2->Draw("same");	
 	
@@ -184,14 +182,14 @@ THStack *hs = new THStack("hs","test");
   c1->SetLogy();
   }	
   
-  TString plotName("plots/Control/"+Obj);
+  TString plotName("plots/cutFlow/");
   
-  if(logPlot == true){
+  if(logPlot ==true){
     plotName += Variable+"_Log";
     plotName += Nbtags+".png";
     
   }else{
-    plotName += Variable;  
+    plotName += Variable+"";  
     plotName += Nbtags+".png";
   }
  
@@ -209,14 +207,9 @@ TH1D* getSample(TString sample, double weight){
 	TFile* file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
 	
-	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+Nbtags);
-	TH1D* plot2 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
-	TH1D* plot3 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"4orMoreBtags");
+	TH1D* plot = (TH1D*) file->Get("EventCount/"+Variable);
 
-	plot->Add(plot2);
-	plot->Add(plot3);
-	
-	if(sample == "TTJet"){
+        if(sample == "TTJet"){
 	plot->SetFillColor(kRed+1);
         plot->SetLineColor(kRed+1);
 	}else if(sample == "WJetsToLNu" || sample == "W1Jet" || sample == "W2Jets"|| sample == "W3Jets"|| sample == "W4Jets"){
@@ -233,9 +226,8 @@ TH1D* getSample(TString sample, double weight){
 	plot->SetLineColor(kMagenta);
 	}
 	
-
 	plot->Scale(weight);
-	plot->Rebin(rebinFact[Var]);
+	plot->Rebin(rebinFact);
 	
 	return plot;
 

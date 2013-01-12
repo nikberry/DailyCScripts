@@ -8,16 +8,19 @@
 #include "THStack.h"
 #include <string.h>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include "tdrstyle.C"
 
 void doPlotsQCD();
 TH1D* getSample(TString sample, double weight);
+TH1D* getCentral(TString sample, double weight);
+TText* doPrelim(float x, float y);
 
-double lumi = 5500;
+double lumi = 5800;
 //stuff to choose
 bool logPlot = false; //true for log plot
-int rebinFact = 5;
+int rebinFact = 10;
 
 //isolation selection
 //TString Isolation = "QCD No Iso/";
@@ -27,6 +30,10 @@ TString Isolation = "QCD non iso mu+jets/";
 
 // number of btags
 TString Nbtags = "0btag";  //standard  "2btags" , qcd "0btag"
+
+bool inclZ = false;
+bool inclW = false;
+bool inclQ = false;
 
 //choose object
 TString Obj = "Muon/";
@@ -44,7 +51,7 @@ void doPlotsQCD(){
 setTDRStyle();
 
 //loop over variables
-for(int i = 0; i<N; i++){
+for(int i = 0; i<1; i++){
 double MinX = MinXs[i];
 double MaxX = MaxXs[i];
 Variable = Variables[i];
@@ -55,27 +62,104 @@ TH1D* data = getSample("SingleMu", 1);
 
 //MC
 TH1D* tt = getSample("TTJet", lumi*225.2/6920475);
-TH1D* wjets = getSample("WJetsToLNu", lumi*37509/57708550);
-TH1D* zjets = getSample("DYJetsToLL", lumi*5745.25/30457954);
-TH1D* qcd = getSample("QCD_Pt-120to170_Mu", lumi*34679.3/8500505);
 
+TH1D* wjets;
+TH1D* w1jets = getSample("W1Jet", lumi*5400.0/23140779);
+TH1D* w2jets = getSample("W2Jets", lumi*1750.0/34041404);
+TH1D* w3jets = getSample("W3Jets", lumi*519.0/15536443);
+TH1D* w4jets = getSample("W4Jets", lumi*214.0/13370904);
+
+if(inclW ==true){
+wjets = getSample("WJetsToLNu", lumi*37509/57708550);
+}else{
+wjets  = getSample("W1Jet", lumi*5400.0/23140779);
+wjets->Add(w2jets);
+wjets->Add(w3jets);
+wjets->Add(w4jets);
+}
+
+TH1D* zjets;
+TH1D* z1jets = getSample("DY1JetsToLL", lumi*561.0/24042904);
+TH1D* z2jets = getSample("DY2JetsToLL", lumi*181.0/21835749);
+TH1D* z3jets = getSample("DY3JetsToLL", lumi*51.1/11010628);
+TH1D* z4jets = getSample("DY4JetsToLL", lumi*23.04/6391785);
+
+if(inclZ ==true){
+zjets = getSample("DYJetsToLL", lumi*5745.25/30457954);
+}else{
+zjets  = getSample("DY1JetsToLL", lumi*561.0/24042904);
+zjets->Add(z2jets);
+zjets->Add(z3jets);
+zjets->Add(z4jets);
+}
+
+TH1D* qcd;
+
+TH1D* qcd1 = getSample("QCD_Pt-15to20_MuEnrichedPt5",   lumi*7.022e8 * 0.0039/1722678);
+TH1D* qcd2 = getSample("QCD_Pt-20to30_MuEnrichedPt5",   lumi*2.87e8 * 0.0065/8486893);
+TH1D* qcd3 = getSample("QCD_Pt-30to50_MuEnrichedPt5",   lumi*6.609e7 * 0.0122/8928999);
+TH1D* qcd4 = getSample("QCD_Pt-50to80_MuEnrichedPt5",   lumi*8082000.0 * 0.0218/7256011);
+TH1D* qcd5 = getSample("QCD_Pt-80to120_MuEnrichedPt5",  lumi*1024000.0 * 0.0395/9030624);
+TH1D* qcd6 = getSample("QCD_Pt-120to170_MuEnrichedPt5", lumi*157800.0 * 0.0473/8500505);
+TH1D* qcd7 = getSample("QCD_Pt-170to300_MuEnrichedPt5", lumi*34020.0 * 0.0676/7662483);
+TH1D* qcd8 = getSample("QCD_Pt-300to470_MuEnrichedPt5", lumi*1757.0 * 0.0864/7797481);
+TH1D* qcd9 = getSample("QCD_Pt-470to600_MuEnrichedPt5", lumi*115.2 * 0.1024/2995767);
+TH1D* qcd10 = getSample("QCD_Pt-800to1000_MuEnrichedPt5",lumi*3.57 * 0.1033/4047142);
+TH1D* qcd11 = getSample("QCD_Pt-1000_MuEnrichedPt5",     lumi*0.774 * 0.1097/3807263);
+
+if(inclQ ==true){
+qcd = getSample("QCD_Pt_20_MuEnrichedPt_15", lumi*34679.3/8500505);
+}else{
+qcd  = getSample("QCD_Pt-15to20_MuEnrichedPt5",   lumi*7.022e8 * 0.0039/1722678);
+qcd->Add(qcd2);
+qcd->Add(qcd3);
+qcd->Add(qcd4);
+qcd->Add(qcd5);
+qcd->Add(qcd6);
+qcd->Add(qcd7);
+qcd->Add(qcd8);
+qcd->Add(qcd9);
+qcd->Add(qcd10);
+qcd->Add(qcd11);
+}
+
+
+
+TH1D* top_t = getSample("T_t-channel", lumi*56.4/3757707);
+TH1D* top_tw = getSample("T_tW-channel", lumi*11.1/497395);
+TH1D* top_s = getSample("T_s-channel", lumi*3.79/249516);
+TH1D* tbar_t = getSample("Tbar_t-channel", lumi*30.7/1934817);
+TH1D* tbar_tw = getSample("Tbar_tW-channel", lumi*11.1/493239);
+TH1D* tbar_s = getSample("Tbar_s-channel", lumi*1.76/139948);
 
 THStack *hs = new THStack("hs","test");
+THStack *qcdstack = new THStack("hs","test");
+
   hs->Add(qcd);
+  qcdstack->Add(qcd); 
   hs->Add(zjets);
+
   hs->Add(wjets);
+      
+  hs->Add(top_t);
+  hs->Add(top_tw);
+  hs->Add(top_s);
+  hs->Add(tbar_t);
+  hs->Add(tbar_tw);
+  hs->Add(tbar_s);
+  
   hs->Add(tt);
 
   //draw histos to files
   TCanvas *c1 = new TCanvas("Plot","Plot",900, 600);
 		
-  hs->SetMaximum(data->GetBinContent(data->GetMaximumBin())*1.3);
+  hs->SetMaximum(data->GetBinContent(data->GetMaximumBin())*1.5);
 
   hs->Draw();
   data->Draw("E same");
   data->SetMarkerStyle(20);
   
-//  hs->GetXaxis()->SetLimits(MinX, MaxX);
+  hs->GetXaxis()->SetLimits(MinX, MaxX);
   hs->GetXaxis()->SetTitle(Xtitle); hs->GetXaxis()->SetTitleSize(0.05);
   hs->GetYaxis()->SetTitle("Number of Events");hs->GetYaxis()->SetTitleSize(0.05);
   
@@ -87,56 +171,188 @@ THStack *hs = new THStack("hs","test");
 	tleg2->SetFillColor(10);
 	tleg2->AddEntry(data , "2012 data", "lpe");
 	tleg2->AddEntry(tt , "t#bar{t}", "lf");
+	tleg2->AddEntry(top_t, "single top", "lf");
 	tleg2->AddEntry(wjets , "w+jets", "lf");
 	tleg2->AddEntry(zjets , "z+jets", "lf");
+	tleg2->AddEntry(qcd , "QCD", "lf");
+	
 	//tleg2->AddEntry(singtEff, "single-t"      , "l");
 	//tleg2->AddEntry(singtwEff, "single-tW"      , "l");
  	tleg2->Draw("same");	
-
+	
+	TText* textPrelim = doPrelim(0.17,0.96);
+	textPrelim->Draw();
+	
   if(logPlot ==true){
   c1->SetLogy();
   }	
   
   TString plotName("plots/Control/QCD/");
   
-  if(logPlot == true){
-    plotName += Variable+"_Log";
-    plotName += Nbtags+".png";
+  if(logPlot ==true){
+    plotName += Variable+"Test_Log";
+    plotName += Nbtags+".pdf";
     
   }else{
-    plotName += Variable;  
-    plotName += Nbtags+".png";
+    plotName += Variable+"Test";  
+    plotName += Nbtags+".pdf";
   }
  
  
   c1->SaveAs(plotName);
   delete c1;
+
+ TH1D*dataclone = (TH1D*)data->Clone("dataclone");
   
+  //subtract samples
+  data->Add(tt, -1);
+  data->Add(top_t, -1); data->Add(top_tw, -1); data->Add(top_s, -1); data->Add(tbar_t, -1); data->Add(tbar_tw, -1); data->Add(tbar_s, -1); data->Add(z1jets, -1); data->Add(z2jets, -1); data->Add(z3jets, -1); data->Add(z4jets, -1);  data->Add(w1jets, -1); data->Add(w2jets, -1); data->Add(w3jets, -1); data->Add(w4jets, -1); 
+
+for(int i = 0; i<data->GetNbinsX(); i++){
+data->SetBinError(sqrt(pow(dataclone->GetBinError(i+1),2)+pow(0.5*tt->GetBinContent(i+1),2)+ pow(0.5*top_t->GetBinContent(i+1),2) + pow(0.5*top_tw->GetBinContent(i+1),2) + pow(0.5*top_s->GetBinContent(i+1),2) + pow(0.5*tbar_t->GetBinContent(i+1),2) + pow(0.5*tbar_tw->GetBinContent(i+1),2) + pow(0.5*tbar_s->GetBinContent(i+1),2) + pow(0.5*z1jets->GetBinContent(i+1),2) + pow(0.5*z2jets->GetBinContent(i+1),2) + pow(0.5*z3jets->GetBinContent(i+1),2) + pow(0.5*z4jets->GetBinContent(i+1),2) +  pow(0.5*w1jets->GetBinContent(i+1),2) + pow(0.5*w2jets->GetBinContent(i+1),2) + pow(0.5*w3jets->GetBinContent(i+1),2) + pow(0.5*w4jets->GetBinContent(i+1),2)),i+1); 
+}   
+    
+    //draw histos to files
+  TCanvas *c2 = new TCanvas("Plot","Plot",900, 600);
+
+  qcdstack->SetMaximum(data->GetBinContent(data->GetMaximumBin())*1.5);
+
+  qcdstack->Draw();
+  data->Draw("E same");
+  data->SetMarkerStyle(20);		
+    
+     qcdstack->GetXaxis()->SetLimits(MinX, MaxX);
+
+     qcdstack->GetXaxis()->SetTitle(Xtitle); qcdstack->GetXaxis()->SetTitleSize(0.05);
+     qcdstack->GetYaxis()->SetTitle("Number of Events"); qcdstack->GetYaxis()->SetTitleSize(0.05); 
+	
+     TLegend *tleg3;
+     tleg3 = new TLegend(0.7,0.7,0.8,0.9);
+     tleg3->SetTextSize(0.04);
+     tleg3->SetBorderSize(0);
+     tleg3->SetFillColor(10);
+     tleg3->AddEntry(data , "2012 data", "lpe");
+     tleg3->AddEntry(qcd , "QCD", "lf");
+
+     tleg2->Draw("same");    
+
+     TText* textPrelim2 = doPrelim(0.17,0.96);
+     textPrelim2->Draw();
+      
+     TString plotName2("plots/Control/QCD/");
+  
+  if(logPlot ==true){
+    plotName2 += Variable+"Test_Log";
+    plotName2 += Nbtags+".pdf";
+    
+  }else{
+    plotName2 += Variable+"Subtract";  
+    plotName2 += Nbtags+".pdf";
   }
+ 
+ 
+  c2->SaveAs(plotName2);
+  delete c2;
+  
+  //corrections
+TH1D* central;
+
+TH1D* central1 = getCentral("QCD_Pt-15to20_MuEnrichedPt5",   lumi*7.022e8 * 0.0039/1722678);
+TH1D* central2 = getCentral("QCD_Pt-20to30_MuEnrichedPt5",   lumi*2.87e8 * 0.0065/8486893);
+TH1D* central3 = getCentral("QCD_Pt-30to50_MuEnrichedPt5",   lumi*6.609e7 * 0.0122/8928999);
+TH1D* central4 = getCentral("QCD_Pt-50to80_MuEnrichedPt5",   lumi*8082000.0 * 0.0218/7256011);
+TH1D* central5 = getCentral("QCD_Pt-80to120_MuEnrichedPt5",  lumi*1024000.0 * 0.0395/9030624);
+TH1D* central6 = getCentral("QCD_Pt-120to170_MuEnrichedPt5", lumi*157800.0 * 0.0473/8500505);
+TH1D* central7 = getCentral("QCD_Pt-170to300_MuEnrichedPt5", lumi*34020.0 * 0.0676/7662483);
+TH1D* central8 = getCentral("QCD_Pt-300to470_MuEnrichedPt5", lumi*1757.0 * 0.0864/7797481);
+TH1D* central9 = getCentral("QCD_Pt-470to600_MuEnrichedPt5", lumi*115.2 * 0.1024/2995767);
+TH1D* central10 = getCentral("QCD_Pt-800to1000_MuEnrichedPt5",lumi*3.57 * 0.1033/4047142);
+TH1D* central11 = getCentral("QCD_Pt-1000_MuEnrichedPt5",     lumi*0.774 * 0.1097/3807263);
+
+if(inclQ ==true){
+central = getCentral("QCD_Pt_20_MuEnrichedPt_15", lumi*34679.3/8500505);
+}else{
+central  = getCentral("QCD_Pt-15to20_MuEnrichedPt5",   lumi*7.022e8 * 0.0039/1722678);
+central->Add(central2);
+central->Add(central3);
+central->Add(central4);
+central->Add(central5);
+central->Add(central6);
+central->Add(central7);
+central->Add(central8);
+central->Add(central9);
+central->Add(central10);
+central->Add(central11);
+}
+
+central->Scale(1./central->Integral());
+qcd->Scale(1./qcd->Integral());
+
+  TCanvas *c3 = new TCanvas("Plot","Plot",900, 600);
+	
+	central->Divide(qcd);
+	central->Draw("E");
+	central->SetLineColor(kBlack);	
+	central->SetMarkerStyle(20);
+	central->SetAxisRange(MinX, MaxX);
+  	central->GetYaxis()->SetTitle("C_{F}"); central->GetYaxis()->SetTitleSize(0.05);
+        central->GetXaxis()->SetTitle(Xtitle); central->GetXaxis()->SetTitleSize(0.05);
+  
+  c3->SaveAs("plots/Control/QCD/Corrections.pdf");
+  delete c3;
+  
+  }// loop over variables
   	
 }
 
 
 TH1D* getSample(TString sample, double weight){
 	TString dir = "rootFiles/";
-	TFile* file = new TFile(dir + sample + "_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET_FULL.root");
+	TFile* file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
 	
-	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+Nbtags);
+	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"0btag");
 
         if(sample == "TTJet"){
 	plot->SetFillColor(kRed+1);
         plot->SetLineColor(kRed+1);
-	}else if(sample == "WJetsToLNu"){
+	}else if(sample == "WJetsToLNu" || sample == "W1Jet" || sample == "W2Jets"|| sample == "W3Jets"|| sample == "W4Jets"){
 	plot->SetLineColor(kGreen-3);	  
   	plot->SetFillColor(kGreen-3);
-	}else if(sample == "DYJetsToLL"){
+	}else if(sample == "DYJetsToLL" || sample == "DY1JetsToLL" || sample == "DY2JetsToLL" || sample == "DY3JetsToLL" || sample == "DY4JetsToLL"){
 	plot->SetFillColor(kAzure-2);
 	plot->SetLineColor(kAzure-2);
-	}else if(sample == "QCD_Pt-120to170_Mu"){
+	}else if(sample == "QCD_Pt_20_MuEnrichedPt_15" || sample == "QCD_Pt-15to20_MuEnrichedPt5" || sample == "QCD_Pt-20to30_MuEnrichedPt5" || sample == "QCD_Pt-30to50_MuEnrichedPt5" || sample == "QCD_Pt-50to80_MuEnrichedPt5" || sample == "QCD_Pt-80to120_MuEnrichedPt5"|| sample == "QCD_Pt-120to170_MuEnrichedPt5" || sample == "QCD_Pt-170to300_MuEnrichedPt5" || sample == "QCD_Pt-300to470_MuEnrichedPt5" || sample == "QCD_Pt-470to600_MuEnrichedPt5" || sample == "QCD_Pt-800to1000_MuEnrichedPt5" || sample == "QCD_Pt-1000_MuEnrichedPt5"){
 	plot->SetFillColor(kYellow);
 	plot->SetLineColor(kYellow);
+	}else if(sample == "T_t-channel" || sample == "T_tW-channel" || sample == "T_s-channel" || sample == "Tbar_t-channel" || sample == "Tbar_tW-channel" || sample == "Tbar_s-channel"){
+	plot->SetFillColor(kMagenta);
+	plot->SetLineColor(kMagenta);
 	}
+    
+	plot->Scale(weight);
+	plot->Rebin(rebinFact);
+	
+	return plot;
+
+}
+
+TH1D* getCentral(TString sample, double weight){
+	TString dir = "rootFiles/";
+	TFile* file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
+	
+	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/Ref selection/"+Obj+Variable+"0btag");
+	
+	TH1D* plot1 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"1btag");
+	TH1D* plot2 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"2btags");
+        TH1D* plot3 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
+	TH1D* plot4 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"4orMoreBtags");
+	
+	plot->Add(plot1);
+	plot->Add(plot2);
+	plot->Add(plot3);
+	plot->Add(plot4);
 	
 	plot->Scale(weight);
 	plot->Rebin(rebinFact);
@@ -145,3 +361,19 @@ TH1D* getSample(TString sample, double weight){
 
 }
 
+
+TText* doPrelim(float x, float y)
+{
+  std::ostringstream stream;
+  stream  << "#mu, #geq 3 jets, 0 b-tags                  CMS Preliminary, L = 5.8 fb^{-1}";   
+
+  TLatex* text = new TLatex(x, y, stream.str().c_str());
+  //text->SetTextAlign(33);  //left
+  //text->SetTextAlign(22);  //center
+  //text->SetTextAlign(11);  //right
+  text->SetNDC(true);
+  text->SetTextFont(62);
+  text->SetTextSize(0.045);  // for thesis
+
+  return text;
+}

@@ -37,7 +37,7 @@ TString ytitle[41] = {"patMETsPFlow" , " GenMET" , " Type1 Corrected PFMet (GeV)
 
 for(int i =2; i<3; i++){
 do2DPlots(muon, variable[i], ytitle[i]);
-getBinning(muon, variable[i]);
+//getBinning(muon, variable[i]);
 }
 
 }
@@ -55,7 +55,7 @@ void do2DPlots(bool muon, TString variable, TString ytitle){
   	gStyle->SetPalette(1);
 
 	TString dir = "rootFiles/";
-	TFile* tt_file = new TFile(dir + "TTJet_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET_FULL.root");
+	TFile* tt_file = new TFile(dir + "TTJet_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 
 
 
@@ -98,7 +98,7 @@ void getBinning(bool muon, TString variable){
 
 	TString dir = "rootFiles/";
 
-TFile* tt_file = new TFile(dir + "TTJet_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET_FULL.root");
+TFile* tt_file = new TFile(dir + "TTJet_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 TH2D* tt_2d = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"/GenMET_vs_RecoMET_2btags");
 cout << "Getting histo: " << "Binning/"+leptonFolder+variable+"/GenMET_vs_RecoMET_2btags" <<endl;
 

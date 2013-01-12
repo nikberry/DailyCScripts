@@ -21,7 +21,7 @@ setTDRStyle();
 	bool muon = true;
 	bool scale = true;
 
-double lumi = 10000;
+double lumi = 5800;
 
 TH1D* tt = getSample("TTJet", muon);
 TH1D* ttEff = new TH1D("cut eff","cut eff",10,0,10);
