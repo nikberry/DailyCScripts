@@ -17,6 +17,7 @@
 void etaFit();
 TH1D* getSample(TString sample, double weight);
 TText* doPrelim(float x, float y);
+TH1D* getQCD(double weight);
 
 void fcn(int& npar, double* deriv, double& f, double par[], int flag);
 
@@ -25,29 +26,11 @@ double lumi = 5800;
 bool logPlot = false; //true for log plot
 int rebinFact = 10;
 
-//isolation selection
-//TString Isolation = "QCD No Iso/";
-TString Isolation = "Ref selection/";
-//TString Isolation = "QCD mu+jets PFRelIso/";
-//TString Isolation = "QCD non iso mu+jets/";
-
-// number of btags
-TString Nbtags = "2btags";  //standard  "2btags" , qcd "0btag"
-
 bool inclZ = false;
 bool inclW = false;
-bool inclQ = true;
-//choose object
-TString Obj = "Muon/";
-//TString Obj = "MET/";
 
-//muon variables
-const int N = 1;
-TString Variable;
-TString Variables[N] = {"muon_AbsEta_"};
-double MinXs[N] = {0};
-double MaxXs[N] = {2.6};
-TString XTitles[N] = {"#left|#eta#right|_{#mu}"};
+//choose object
+TString Obj = "Muon";
 
 //global histos for fit
 TH1D* data; 
@@ -55,18 +38,17 @@ TH1D* top_fit;
 TH1D* wjets_fit;
 TH1D* zjets_fit;
 TH1D* qcd_fit;
+TH1D* bg_fit;
 
 double Nwjets, Nzjets, NQCD;
 
 void etaFit(){
 setTDRStyle();
 
-//loop over variables
-for(int i = 0; i<N; i++){
-double MinX = MinXs[i];
-double MaxX = MaxXs[i];
-Variable = Variables[i];
-TString Xtitle = XTitles[i];
+double MinX = 0.;
+double MaxX = 2.6;
+
+TString Xtitle = "#left|#eta#right|_{#mu}";
 
 //Data
 data = getSample("SingleMu", 1);
@@ -74,30 +56,23 @@ data = getSample("SingleMu", 1);
 //MC
 TH1D* tt = getSample("TTJet", lumi*225.2/6920475);
 
-TH1D* wjets = getSample("WJetsToLNu", lumi*37509/57708550);
+TH1D* wjets;
 TH1D* w1jets = getSample("W1Jet", lumi*5400.0/23140779);
 TH1D* w2jets = getSample("W2Jets", lumi*1750.0/34041404);
 TH1D* w3jets = getSample("W3Jets", lumi*519.0/15536443);
 TH1D* w4jets = getSample("W4Jets", lumi*214.0/13370904);
 
-TH1D* zjets = getSample("DYJetsToLL", lumi*5745.25/30457954);
+TH1D* zjets;
 TH1D* z1jets = getSample("DY1JetsToLL", lumi*561.0/24042904);
 TH1D* z2jets = getSample("DY2JetsToLL", lumi*181.0/21835749);
 TH1D* z3jets = getSample("DY3JetsToLL", lumi*51.1/11010628);
 TH1D* z4jets = getSample("DY4JetsToLL", lumi*23.04/6391785);
 
-TH1D* qcd = getSample("QCD_Pt_20_MuEnrichedPt_15",     lumi*34679.3/8500505);
-TH1D* qcd1 = getSample("QCD_Pt-15to20_MuEnrichedPt5",   lumi*7.022e8 * 0.0039/1722678);
-TH1D* qcd2 = getSample("QCD_Pt-20to30_MuEnrichedPt5",   lumi*2.87e8 * 0.0065/8486893);
-TH1D* qcd3 = getSample("QCD_Pt-30to50_MuEnrichedPt5",   lumi*6.609e7 * 0.0122/8928999);
-TH1D* qcd4 = getSample("QCD_Pt-50to80_MuEnrichedPt5",   lumi*8082000.0 * 0.0218/7256011);
-TH1D* qcd5 = getSample("QCD_Pt-80to120_MuEnrichedPt5",  lumi*1024000.0 * 0.0395/9030624);
-TH1D* qcd6 = getSample("QCD_Pt-120to170_MuEnrichedPt5", lumi*157800.0 * 0.0473/8500505);
-TH1D* qcd7 = getSample("QCD_Pt-170to300_MuEnrichedPt5", lumi*34020.0 * 0.0676/7662483);
-TH1D* qcd8 = getSample("QCD_Pt-300to470_MuEnrichedPt5", lumi*1757.0 * 0.0864/7797481);
-TH1D* qcd9 = getSample("QCD_Pt-470to600_MuEnrichedPt5", lumi*115.2 * 0.1024/2995767);
-TH1D* qcd10 = getSample("QCD_Pt-800to1000_MuEnrichedPt5",lumi*3.57 * 0.1033/4047142);
-TH1D* qcd11 = getSample("QCD_Pt-1000_MuEnrichedPt5",     lumi*0.774 * 0.1097/3807263);
+TH1D* qcd = getQCD(lumi*34679.3/8500505);
+TH1D* qcd_mc = getSample("QCD_Pt_20_MuEnrichedPt_15", lumi*34679.3/8500505);
+qcd->Scale(qcd_mc->Integral());
+cout << "NQCD: " << qcd_mc->Integral() << endl;
+
 
 TH1D* top_t = getSample("T_t-channel", lumi*56.4/3757707);
 TH1D* top_tw = getSample("T_tW-channel", lumi*11.1/497395);
@@ -106,66 +81,37 @@ TH1D* tbar_t = getSample("Tbar_t-channel", lumi*30.7/1934817);
 TH1D* tbar_tw = getSample("Tbar_tW-channel", lumi*11.1/493239);
 TH1D* tbar_s = getSample("Tbar_s-channel", lumi*1.76/139948);
 
+//make combined top and single top template
 TH1D* top = (TH1D*)tt->Clone("top");
 top->Add(top_t); top->Add(top_tw);top->Add(top_s); top->Add(tbar_t); top->Add(tbar_tw);top->Add(tbar_s);
-TH1D* allMC = (TH1D*)top->Clone("allMC");
-allMC->Add(wjets); allMC->Add(zjets); allMC->Add(qcd);
 
-top_fit = (TH1D*)top->Clone("top fit");
-wjets_fit = (TH1D*)wjets->Clone("wjets fit");
-zjets_fit = (TH1D*)zjets->Clone("zjets fit");
-qcd_fit = (TH1D*)qcd->Clone("qcd fit");
-top_fit->Scale(1./ top_fit->Integral());
-wjets_fit->Scale(1./ wjets_fit->Integral()); 
-zjets_fit->Scale(1./ zjets_fit->Integral()); 
-qcd_fit->Scale(1./ qcd_fit->Integral());
-  
-  //draw histos to files
-  TCanvas *c2 = new TCanvas("Plot","Plot",900, 600);
-  
-  top_fit->SetFillColor(kWhite); wjets_fit->SetFillColor(kWhite); zjets_fit->SetFillColor(kWhite); qcd_fit->SetFillColor(kWhite);
-  top_fit->Draw();
-  wjets_fit->Draw("same");
-  zjets_fit->Draw("same");
-  qcd_fit->Draw("same");
-  c2->SaveAs("plots/Fits/Templates.png");
-  delete c2;
+//single top
+TH1D* single_top = (TH1D*)top_t->Clone("single top");
+single_top->Add(top_tw);single_top->Add(top_s); single_top->Add(tbar_t); single_top->Add(tbar_tw);single_top->Add(tbar_s);
   
   
 THStack *hs = new THStack("hs","test");
-  if(inclQ == true){
+
   hs->Add(qcd);
-  }else{
-  hs->Add(qcd1);
-  hs->Add(qcd2);
-  hs->Add(qcd3);
-  hs->Add(qcd4);
-  hs->Add(qcd5);
-  hs->Add(qcd6);
-  hs->Add(qcd7);
-  hs->Add(qcd8);
-  hs->Add(qcd9);
-  hs->Add(qcd10);
-  hs->Add(qcd11);
-  }
-  
-  
+    
   if(inclZ == true){
+  zjets = getSample("DYJetsToLL", lumi*5745.25/30457954);
   hs->Add(zjets);
   }else{
-  hs->Add(z1jets);
-  hs->Add(z2jets);
-  hs->Add(z3jets);
-  hs->Add(z4jets);  
+  hs->Add(z1jets);  zjets  = getSample("DY1JetsToLL", lumi*561.0/24042904);
+  hs->Add(z2jets);  zjets->Add(z2jets);
+  hs->Add(z3jets);  zjets->Add(z3jets);
+  hs->Add(z4jets);  zjets->Add(z4jets);  
   }
   
   if(inclW == true){
+  wjets = getSample("WJetsToLNu", lumi*37509/57708550);
   hs->Add(wjets);
   }else{
-  hs->Add(w1jets);
-  hs->Add(w2jets);
-  hs->Add(w3jets);
-  hs->Add(w4jets);  
+  hs->Add(w1jets);  wjets = getSample("W1Jet", lumi*5400.0/23140779); 
+  hs->Add(w2jets);  wjets->Add(w2jets);
+  hs->Add(w3jets);  wjets->Add(w3jets);
+  hs->Add(w4jets);  wjets->Add(w4jets);
   }
       
   hs->Add(top_t);
@@ -176,6 +122,10 @@ THStack *hs = new THStack("hs","test");
   hs->Add(tbar_s);
   
   hs->Add(tt);
+
+//combined histo for pseudo?
+TH1D* allMC = (TH1D*)top->Clone("allMC");
+allMC->Add(wjets); allMC->Add(zjets); allMC->Add(qcd);
 
   //draw histos to files
   TCanvas *c1 = new TCanvas("Plot","Plot",900, 600);
@@ -217,18 +167,48 @@ THStack *hs = new THStack("hs","test");
   TString plotName("plots/Control/Muon/");
   
   if(logPlot ==true){
-    plotName += Variable+"Test_Log";
-    plotName += Nbtags+".png";
+    plotName += "absEta_Log";
+    plotName += "_ge2btags.png";
     
   }else{
-    plotName += Variable+"Test";  
-    plotName += Nbtags+".png";
+    plotName += "absEta";  
+    plotName += "_ge2btags.png";
   }
  
  
   c1->SaveAs(plotName);
   delete c1;
+
+//clone and scale
+top_fit = (TH1D*)top->Clone("top fit");
+wjets_fit = (TH1D*)wjets->Clone("wjets fit");
+zjets_fit = (TH1D*)zjets->Clone("zjets fit");
+qcd_fit = (TH1D*)qcd->Clone("qcd fit");
+
+bg_fit = (TH1D*)wjets_fit->Clone("bg fit");
+bg_fit->Add(zjets_fit);
+bg_fit->Add(qcd_fit);
+
+top_fit->Scale(1./ top_fit->Integral());
+wjets_fit->Scale(1./ wjets_fit->Integral()); 
+zjets_fit->Scale(1./ zjets_fit->Integral()); 
+qcd_fit->Scale(1./ qcd_fit->Integral());
+bg_fit->Scale(1./ bg_fit->Integral());
+
+//cout << "top: marker: " << top_fit->GetMarkerStyle()<< " , " << top_fit->GetMarkerColor() << " , line: " <<  top_fit->GetLineStyle() << " ,opt: " << top_fit->GetOption() << endl;
+//cout << "qcd: marker: " << qcd_fit->GetMarkerStyle() <<" , " << qcd_fit->GetMarkerColor() << " , line: " <<  qcd_fit->GetLineStyle() <<  " ,opt: " << qcd_fit->GetOption() <<endl;
   
+  //draw histos to files
+  TCanvas *c2 = new TCanvas("Plot","Plot",900, 600);
+  
+  top_fit->SetFillColor(kWhite); wjets_fit->SetFillColor(kWhite); zjets_fit->SetFillColor(kWhite); qcd_fit->SetFillColor(kWhite);
+  top_fit->Draw();
+  wjets_fit->Draw("same");
+  zjets_fit->Draw("same");
+  qcd_fit->Draw("same");
+  c2->SaveAs("plots/Fits/Templates.png");
+  delete c2;
+ 
 int Ntotal = data->Integral();
 double Nsignal = top->Integral();
 Nwjets = wjets->Integral();
@@ -236,7 +216,7 @@ Nzjets = zjets->Integral();
 NQCD = qcd->Integral();
 
   // Initialize minuit, set initial values etc. of parameters.
-  const int npar = 4;              // the number of parameters
+  const int npar = 2;              // the number of parameters
   TMinuit minuit(npar);
   minuit.SetFCN(fcn);
 
@@ -245,8 +225,8 @@ NQCD = qcd->Integral();
   
   
   int ierflg = 0;
-  string parName[npar] = {"ttbar+single-top", "wjets", "zjets", "qcd"}; //background parameters
-  double par[npar] = {top->Integral(), wjets->Integral(), zjets->Integral(), qcd->Integral()};               //using the MC estimation as the start values 1fb
+  string parName[npar] = {"ttbar+single-top", "background"}; //background parameters
+  double par[npar] = {top->Integral(), wjets->Integral()+zjets->Integral()+qcd->Integral()};               //using the MC estimation as the start values 1fb
   
   cout << "total data events: " << Ntotal << endl;
 
@@ -274,23 +254,31 @@ NQCD = qcd->Integral();
   for (int i=0; i<top_fit->GetNbinsX() ; i++){
   
  	top_fit->SetBinContent(i+1, top_fit->GetBinContent(i+1)*outpar[0]);
-	wjets_fit->SetBinContent(i+1, wjets_fit->GetBinContent(i+1)*outpar[1]);
-	zjets_fit->SetBinContent(i+1, zjets_fit->GetBinContent(i+1)*outpar[2]);
-	qcd_fit->SetBinContent(i+1, qcd_fit->GetBinContent(i+1)*outpar[3]);
+	bg_fit->SetBinContent(i+1, wjets_fit->GetBinContent(i+1)*outpar[1]);
+	//zjets_fit->SetBinContent(i+1, zjets_fit->GetBinContent(i+1)*outpar[2]);
+	//qcd_fit->SetBinContent(i+1, qcd_fit->GetBinContent(i+1)*outpar[3]);
   
   }
   //print out the results
+//   cout <<" \n Total number of events after the fit" << endl;
+//   cout<<"   & ttbar+single top & w+jets & z+jets & qcd "<<endl;
+//   cout <<  " & " << Nsignal <<  " & " << Nwjets << " & " <<  Nzjets << " & " <<  NQCD  <<endl;
+//   cout<< " & "<<outpar[0]<<"+-"<<err[0]<<" & "<<outpar[1]<<"+-"<<err[1]<<" & "<<outpar[2]<<"+-"<<err[2]<<" & "<<outpar[3]<<"+-"<<err[3]<<endl;
+
   cout <<" \n Total number of events after the fit" << endl;
   cout<<"   & ttbar+single top & w+jets & z+jets & qcd "<<endl;
-  cout <<  " & " << Nsignal <<  " & " << Nwjets << " & " <<  Nzjets << " & " <<  NQCD  <<endl;
-  cout<< " & "<<outpar[0]<<"+-"<<err[0]<<" & "<<outpar[1]<<"+-"<<err[1]<<" & "<<outpar[2]<<"+-"<<err[2]<<" & "<<outpar[3]<<"+-"<<err[3]<<endl;
-  
+  cout <<  " & " << Nsignal <<  " & " << Nwjets + Nzjets + NQCD  <<endl;
+  cout<< " & "<<outpar[0] << "+-" <<err[0] << " & " <<outpar[1]<<"+-"<<err[1] <<endl; 
+
   
     TCanvas *c3 = new TCanvas("Plot","Plot",900, 600);
   
   THStack* sum_fit = new THStack("sum fit","stacked histograms"); //used for stack plot
   qcd_fit->SetFillColor(kYellow); zjets_fit->SetFillColor(kBlue);   wjets_fit->SetFillColor(kGreen);  top_fit->SetFillColor(kRed);
-  sum_fit->Add(qcd_fit); sum_fit->Add(zjets_fit);  sum_fit->Add(wjets_fit);  sum_fit->Add(top_fit);
+  //sum_fit->Add(qcd_fit); sum_fit->Add(zjets_fit);  sum_fit->Add(wjets_fit);  
+  
+  bg_fit->SetFillColor(kGreen);
+  sum_fit->Add(bg_fit);sum_fit->Add(top_fit);
   
 
   sum_fit->Draw();
@@ -298,21 +286,21 @@ NQCD = qcd->Integral();
   
    c3->SaveAs("plots/Fits/Fit.png");
     delete c3;
-  
-  
-  }//end of loop over variables
-  	
+
+cout << "cross section is:  " <<  ((outpar[0]-single_top->Integral())/ tt->Integral())*225.2 << endl;
+
+    	
 }
 
 
 TH1D* getSample(TString sample, double weight){
 	TString dir = "rootFiles/";
-	TFile* file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
-	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
 	
-	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"2btags");
-	TH1D* plot2 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
-	TH1D* plot3 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"4orMoreBtags");
+	TFile* file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+		
+	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/Ref selection/"+Obj+"/muon_AbsEta_"+"2btags");
+	TH1D* plot2 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/Ref selection/"+Obj+"/muon_AbsEta_"+"3btags");
+	TH1D* plot3 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/Ref selection/"+Obj+"/muon_AbsEta_"+"4orMoreBtags");
 
 	plot->Add(plot2);
 	plot->Add(plot3);
@@ -338,6 +326,37 @@ TH1D* getSample(TString sample, double weight){
 	plot->Rebin(rebinFact);
 	
 	return plot;
+
+}
+
+TH1D* getQCD(double weight){
+	TString dir = "rootFiles/";
+	
+	TFile* file = new TFile(dir +"qcdest.root");		
+	TH1D* plot = (TH1D*) file->Get("muon_AbsEta_0btag");
+
+// 	for(int i = 1; i <= plot->GetNbinsX(); i++){
+// 	plot->SetBinError(i, 0.0);
+// 	}
+
+	plot->SetFillColor(kYellow);
+	plot->SetLineColor(kYellow);
+	plot->SetMarkerStyle(1);
+		
+	//plot->Scale(weight);	
+		
+	TH1D* copyplot = new TH1D("qcd plot", "qcd plot", 30, 0.0, 3.0);
+	
+	for(int i = 1; i <= plot->GetNbinsX(); i++){
+	copyplot->SetBinContent(i, plot->GetBinContent(i));
+	//copyplot->SetBinError(i, plot->GetBinError(i));
+	}
+	copyplot->SetFillColor(kYellow);
+	copyplot->SetLineColor(kYellow);
+	copyplot->SetMarkerStyle(1);
+	copyplot->Scale(1./copyplot->Integral());	
+	
+	return copyplot;
 
 }
 
@@ -367,7 +386,7 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
     //data_i is the observed number of events in each bin
     int data_i = data->GetBinContent(i+1);
     //xi is the expected number of events in each bin
-    double xi = par[0]*top_fit->GetBinContent(i+1) + par[1]*wjets_fit->GetBinContent(i+1) + par[2]*zjets_fit->GetBinContent(i+1) + par[3]*qcd_fit->GetBinContent(i+1);
+    double xi = par[0]*top_fit->GetBinContent(i+1) + par[1]*bg_fit->GetBinContent(i+1);
 
    
     if(data_i !=0 && xi != 0){
@@ -379,28 +398,28 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag){
   //W+jets, Z+jets constraints
   f = -2.0 * lnL;
   
-
-  double nwjets = Nwjets;
-//  double nwjets_err = nwjets*0.3;
-  //double nwjets_err = nwjets*0.02;
-   
-  double nzjets = Nzjets;
-//  double nzjets_err = nzjets*0.1;
-
-double nqcd = 0;
-if(NQCD>0){
-  nqcd = NQCD;
-  }
-  else{
-  nqcd = 0.00000001;
-  }
-  double nqcd_err = nqcd*1.;
+// 
+//   double nwjets = Nwjets;
+// //  double nwjets_err = nwjets*0.3;
+//   //double nwjets_err = nwjets*0.02;
+//    
+//   double nzjets = Nzjets;
+// //  double nzjets_err = nzjets*0.1;
+// 
+// double nqcd = 0;
+// if(NQCD>0){
+//   nqcd = NQCD;
+//   }
+//   else{
+//   nqcd = 0.00000001;
+//   }
+//   double nqcd_err = nqcd*1.;
 
   //ratio constraints
-   f += ( (par[2]/par[1] - nzjets/nwjets) / (0.05 *nzjets/nwjets) )  * ( (par[2]/par[1] - nzjets/nwjets) / (0.05*nzjets/nwjets) ); 
+   //f += ( (par[2]/par[1] - nzjets/nwjets) / (0.05 *nzjets/nwjets) )  * ( (par[2]/par[1] - nzjets/nwjets) / (0.05*nzjets/nwjets) ); 
 
 
-   f += ((par[3]-nqcd)*(par[3]-nqcd))/nqcd_err/nqcd_err;
+   //f += ((par[3]-nqcd)*(par[3]-nqcd))/nqcd_err/nqcd_err;
 
 
 

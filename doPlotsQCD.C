@@ -15,6 +15,7 @@
 void doPlotsQCD();
 TH1D* getSample(TString sample, double weight);
 TH1D* getCentral(TString sample, double weight);
+TH1D* getQCD(double weight);
 TText* doPrelim(float x, float y);
 
 double lumi = 5800;
@@ -249,11 +250,20 @@ data->SetBinError(sqrt(pow(dataclone->GetBinError(i+1),2)+pow(0.5*tt->GetBinCont
     plotName2 += Variable+"Subtract";  
     plotName2 += Nbtags+".pdf";
   }
- 
+
  
   c2->SaveAs(plotName2);
   delete c2;
-  
+
+ 
+ data->Scale(1./data->Integral());
+
+TFile qcdfile("qcdest.root", "RECREATE", "comment");
+
+  data->Write();
+  qcdfile.Write();
+  qcdfile.Close();
+    
   //corrections
 TH1D* central;
 
@@ -301,6 +311,123 @@ qcd->Scale(1./qcd->Integral());
   c3->SaveAs("plots/Control/QCD/Corrections.pdf");
   delete c3;
   
+  
+  //Data
+TH1D* data_ge4 = getCentral("SingleMu", 1);
+
+//MC
+TH1D* tt_ge4 = getCentral("TTJet", lumi*225.2/6920475);
+
+TH1D* wjets_ge4;
+TH1D* w1jets_ge4 = getCentral("W1Jet", lumi*5400.0/23140779);
+TH1D* w2jets_ge4 = getCentral("W2Jets", lumi*1750.0/34041404);
+TH1D* w3jets_ge4 = getCentral("W3Jets", lumi*519.0/15536443);
+TH1D* w4jets_ge4 = getCentral("W4Jets", lumi*214.0/13370904);
+
+if(inclW ==true){
+wjets_ge4 = getCentral("WJetsToLNu", lumi*37509/57708550);
+}else{
+wjets_ge4  = getCentral("W1Jet", lumi*5400.0/23140779);
+wjets_ge4->Add(w2jets_ge4);
+wjets_ge4->Add(w3jets_ge4);
+wjets_ge4->Add(w4jets_ge4);
+}
+
+TH1D* zjets_ge4;
+TH1D* z1jets_ge4 = getCentral("DY1JetsToLL", lumi*561.0/24042904);
+TH1D* z2jets_ge4 = getCentral("DY2JetsToLL", lumi*181.0/21835749);
+TH1D* z3jets_ge4 = getCentral("DY3JetsToLL", lumi*51.1/11010628);
+TH1D* z4jets_ge4 = getCentral("DY4JetsToLL", lumi*23.04/6391785);
+
+if(inclZ ==true){
+zjets_ge4 = getCentral("DYJetsToLL", lumi*5745.25/30457954);
+}else{
+zjets_ge4  = getCentral("DY1JetsToLL", lumi*561.0/24042904);
+zjets_ge4->Add(z2jets_ge4);
+zjets_ge4->Add(z3jets_ge4);
+zjets_ge4->Add(z4jets_ge4);
+}
+
+TH1D* top_t_ge4 = getCentral("T_t-channel", lumi*56.4/3757707);
+TH1D* top_tw_ge4 = getCentral("T_tW-channel", lumi*11.1/497395);
+TH1D* top_s_ge4 = getCentral("T_s-channel", lumi*3.79/249516);
+TH1D* tbar_t_ge4 = getCentral("Tbar_t-channel", lumi*30.7/1934817);
+TH1D* tbar_tw_ge4 = getCentral("Tbar_tW-channel", lumi*11.1/493239);
+TH1D* tbar_s_ge4 = getCentral("Tbar_s-channel", lumi*1.76/139948);
+
+TH1D* qcd_ge4 = getQCD(lumi*34679.3/8500505);
+TH1D* qcd_mc = getCentral("QCD_Pt_20_MuEnrichedPt_15", lumi*34679.3/8500505);
+qcd_ge4->Scale(qcd_mc->Integral());
+
+THStack *hsge4 = new THStack("hs","test");
+
+  hsge4->Add(qcd_ge4);
+  hsge4->Add(zjets_ge4);
+
+  hsge4->Add(wjets_ge4);
+      
+  hsge4->Add(top_t_ge4);
+  hsge4->Add(top_tw_ge4);
+  hsge4->Add(top_s_ge4);
+  hsge4->Add(tbar_t_ge4);
+  hsge4->Add(tbar_tw_ge4);
+  hsge4->Add(tbar_s_ge4);
+  
+  hsge4->Add(tt_ge4);
+
+  //draw histos to files
+  TCanvas *c4 = new TCanvas("Plot","Plot",900, 600);
+		
+  hsge4->SetMaximum(data_ge4->GetBinContent(data_ge4->GetMaximumBin())*1.5);
+
+  hsge4->Draw();
+  data_ge4->Draw("E same");
+  data_ge4->SetMarkerStyle(20);
+  
+  hsge4->GetXaxis()->SetLimits(MinX, MaxX);
+  hsge4->GetXaxis()->SetTitle(Xtitle); hsge4->GetXaxis()->SetTitleSize(0.05);
+  hsge4->GetYaxis()->SetTitle("Number of Events");hsge4->GetYaxis()->SetTitleSize(0.05);
+  
+  
+  	TLegend *tleg4;
+	tleg4 = new TLegend(0.7,0.7,0.8,0.9);
+	tleg4->SetTextSize(0.04);
+	tleg4->SetBorderSize(0);
+	tleg4->SetFillColor(10);
+	tleg4->AddEntry(data , "2012 data", "lpe");
+	tleg4->AddEntry(tt , "t#bar{t}", "lf");
+	tleg4->AddEntry(top_t, "single top", "lf");
+	tleg4->AddEntry(wjets , "w+jets", "lf");
+	tleg4->AddEntry(zjets , "z+jets", "lf");
+	tleg4->AddEntry(qcd , "QCD", "lf");
+	
+	//tleg4->AddEntry(singtEff, "single-t"      , "l");
+	//tleg4->AddEntry(singtwEff, "single-tW"      , "l");
+ 	tleg4->Draw("same");	
+	
+	TText* textPrelim4 = doPrelim(0.17,0.96);
+	textPrelim4->Draw();
+	
+  if(logPlot ==true){
+  c1->SetLogy();
+  }	
+  
+  TString plotName4("plots/Control/QCD/");
+  
+  if(logPlot ==true){
+    plotName4 += Variable+"Test_Log";
+    plotName4 += Nbtags+".pdf";
+    
+  }else{
+    plotName4 += Variable+"QCDest";  
+    plotName4 += Nbtags+".pdf";
+  }
+ 
+ 
+  c4->SaveAs(plotName4);
+  delete c4;
+
+
   }// loop over variables
   	
 }
@@ -354,6 +481,23 @@ TH1D* getCentral(TString sample, double weight){
 	plot->Add(plot3);
 	plot->Add(plot4);
 	
+        if(sample == "TTJet"){
+	plot->SetFillColor(kRed+1);
+        plot->SetLineColor(kRed+1);
+	}else if(sample == "WJetsToLNu" || sample == "W1Jet" || sample == "W2Jets"|| sample == "W3Jets"|| sample == "W4Jets"){
+	plot->SetLineColor(kGreen-3);	  
+  	plot->SetFillColor(kGreen-3);
+	}else if(sample == "DYJetsToLL" || sample == "DY1JetsToLL" || sample == "DY2JetsToLL" || sample == "DY3JetsToLL" || sample == "DY4JetsToLL"){
+	plot->SetFillColor(kAzure-2);
+	plot->SetLineColor(kAzure-2);
+	}else if(sample == "QCD_Pt_20_MuEnrichedPt_15" || sample == "QCD_Pt-15to20_MuEnrichedPt5" || sample == "QCD_Pt-20to30_MuEnrichedPt5" || sample == "QCD_Pt-30to50_MuEnrichedPt5" || sample == "QCD_Pt-50to80_MuEnrichedPt5" || sample == "QCD_Pt-80to120_MuEnrichedPt5"|| sample == "QCD_Pt-120to170_MuEnrichedPt5" || sample == "QCD_Pt-170to300_MuEnrichedPt5" || sample == "QCD_Pt-300to470_MuEnrichedPt5" || sample == "QCD_Pt-470to600_MuEnrichedPt5" || sample == "QCD_Pt-800to1000_MuEnrichedPt5" || sample == "QCD_Pt-1000_MuEnrichedPt5"){
+	plot->SetFillColor(kYellow);
+	plot->SetLineColor(kYellow);
+	}else if(sample == "T_t-channel" || sample == "T_tW-channel" || sample == "T_s-channel" || sample == "Tbar_t-channel" || sample == "Tbar_tW-channel" || sample == "Tbar_s-channel"){
+	plot->SetFillColor(kMagenta);
+	plot->SetLineColor(kMagenta);
+	}
+	
 	plot->Scale(weight);
 	plot->Rebin(rebinFact);
 	
@@ -361,6 +505,36 @@ TH1D* getCentral(TString sample, double weight){
 
 }
 
+TH1D* getQCD(double weight){
+	TString dir = "rootFiles/";
+	
+	TFile* file = new TFile(dir +"qcdest.root");		
+	TH1D* plot = (TH1D*) file->Get("muon_AbsEta_0btag");
+
+// 	for(int i = 1; i <= plot->GetNbinsX(); i++){
+// 	plot->SetBinError(i, 0.0);
+// 	}
+
+	plot->SetFillColor(kYellow);
+	plot->SetLineColor(kYellow);
+	plot->SetMarkerStyle(1);
+		
+	//plot->Scale(weight);	
+		
+	TH1D* copyplot = new TH1D("qcd plot", "qcd plot", 30, 0.0, 3.0);
+	
+	for(int i = 1; i <= plot->GetNbinsX(); i++){
+	copyplot->SetBinContent(i, plot->GetBinContent(i));
+	//copyplot->SetBinError(i, plot->GetBinError(i));
+	}
+	copyplot->SetFillColor(kYellow);
+	copyplot->SetLineColor(kYellow);
+	copyplot->SetMarkerStyle(1);
+
+	
+	return copyplot;
+
+}
 
 TText* doPrelim(float x, float y)
 {
