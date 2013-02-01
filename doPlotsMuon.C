@@ -32,7 +32,7 @@ TString Nbtags = "2btags";  //standard  "2btags" , qcd "0btag"
 
 bool inclZ = false;
 bool inclW = false;
-bool inclQ = true;
+bool inclQ = false;
 //choose object
 TString Obj = "Muon/";
 //TString Obj = "MET/";
@@ -44,10 +44,6 @@ TString Variables[N] = {"muon_AbsEta_", "muon_eta_", "muon_pfIsolation_04_", "mu
 double MinXs[N] = {0,-2.6 ,0 , 0, -3.2, 0};
 double MaxXs[N] = {2.6,2.6 ,0.15 , 400,3.2 , 0.3};
 TString XTitles[N] = {"#left|#eta#right|_{#mu}", "#eta_{#mu}", "RelIso_{#mu}", "p_{T}(#mu) [GeV]", "#phi_{#mu}", "dB_{#mu}"};
-
-//met variables
-//TString Variable = "patType1CorrectedPFMet/MET_";
-
 
 void doPlotsMuon(){
 setTDRStyle();
@@ -65,19 +61,19 @@ TH1D* data = getSample("SingleMu", 1);
 //MC
 TH1D* tt = getSample("TTJet", lumi*225.2/6920475);
 
-TH1D* wjets = getSample("WJetsToLNu", lumi*37509/57708550);
+TH1D* wjets = getSample("W1Jet", lumi*37509/57708550);
 TH1D* w1jets = getSample("W1Jet", lumi*5400.0/23140779);
 TH1D* w2jets = getSample("W2Jets", lumi*1750.0/34041404);
 TH1D* w3jets = getSample("W3Jets", lumi*519.0/15536443);
 TH1D* w4jets = getSample("W4Jets", lumi*214.0/13370904);
 
-TH1D* zjets = getSample("DYJetsToLL", lumi*5745.25/30457954);
+TH1D* zjets = getSample("DY1JetsToLL", lumi*5745.25/30457954);
 TH1D* z1jets = getSample("DY1JetsToLL", lumi*561.0/24042904);
 TH1D* z2jets = getSample("DY2JetsToLL", lumi*181.0/21835749);
 TH1D* z3jets = getSample("DY3JetsToLL", lumi*51.1/11010628);
 TH1D* z4jets = getSample("DY4JetsToLL", lumi*23.04/6391785);
 
-TH1D* qcd = getSample("QCD_Pt_20_MuEnrichedPt_15",     lumi*34679.3/8500505);
+TH1D* qcd = getSample("QCD_Pt-15to20_MuEnrichedPt5",     lumi*34679.3/8500505);
 TH1D* qcd1 = getSample("QCD_Pt-15to20_MuEnrichedPt5",   lumi*7.022e8 * 0.0039/1722678);
 TH1D* qcd2 = getSample("QCD_Pt-20to30_MuEnrichedPt5",   lumi*2.87e8 * 0.0065/8486893);
 TH1D* qcd3 = getSample("QCD_Pt-30to50_MuEnrichedPt5",   lumi*6.609e7 * 0.0122/8928999);
@@ -200,13 +196,13 @@ THStack *hs = new THStack("hs","test");
 
 
 TH1D* getSample(TString sample, double weight){
-	TString dir = "rootFiles/";
-	TFile* file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	TString dir = "rootFilesV2/central/";
+	TFile* file = new TFile(dir + sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
 	
-	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"2btags");
-	TH1D* plot2 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
-	TH1D* plot3 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"4orMoreBtags");
+	TH1D* plot = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"2btags");
+	TH1D* plot2 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
+	TH1D* plot3 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"4orMoreBtags");
 
 	plot->Add(plot2);
 	plot->Add(plot3);
@@ -220,7 +216,7 @@ TH1D* getSample(TString sample, double weight){
 	}else if(sample == "DYJetsToLL" || sample == "DY1JetsToLL" || sample == "DY2JetsToLL" || sample == "DY3JetsToLL" || sample == "DY4JetsToLL"){
 	plot->SetFillColor(kAzure-2);
 	plot->SetLineColor(kAzure-2);
-	}else if(sample == "QCD_Pt_20_MuEnrichedPt_15"){
+	}else if(sample == "QCD_Pt_20_MuEnrichedPt_15" || sample == "QCD_Pt-15to20_MuEnrichedPt5" || sample=="QCD_Pt-15to20_MuEnrichedPt5" || sample =="QCD_Pt-20to30_MuEnrichedPt5" || sample ==    "QCD_Pt-30to50_MuEnrichedPt5" || sample ==    "QCD_Pt-50to80_MuEnrichedPt5" || sample ==    "QCD_Pt-80to120_MuEnrichedPt5" || sample ==   "QCD_Pt-120to170_MuEnrichedPt5" || sample ==  "QCD_Pt-170to300_MuEnrichedPt5" || sample ==  "QCD_Pt-300to470_MuEnrichedPt5" || sample ==  "QCD_Pt-470to600_MuEnrichedPt5" || sample ==  "QCD_Pt-800to1000_MuEnrichedPt5" || sample =="QCD_Pt-1000_MuEnrichedPt5" 	 ){
 	plot->SetFillColor(kYellow);
 	plot->SetLineColor(kYellow);
 	}else if(sample == "T_t-channel" || sample == "T_tW-channel" || sample == "T_s-channel" || sample == "Tbar_t-channel" || sample == "Tbar_tW-channel" || sample == "Tbar_s-channel"){
@@ -228,7 +224,7 @@ TH1D* getSample(TString sample, double weight){
 	plot->SetLineColor(kMagenta);
 	}
 	
-	plot->Scale(weight);
+	//plot->Scale(weight);
 	plot->Rebin(rebinFact);
 	
 	return plot;

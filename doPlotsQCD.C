@@ -200,7 +200,7 @@ THStack *qcdstack = new THStack("hs","test");
   }
  
  
-  c1->SaveAs(plotName);
+//  c1->SaveAs(plotName);
   delete c1;
 
  TH1D*dataclone = (TH1D*)data->Clone("dataclone");
@@ -252,7 +252,7 @@ data->SetBinError(sqrt(pow(dataclone->GetBinError(i+1),2)+pow(0.5*tt->GetBinCont
   }
 
  
-  c2->SaveAs(plotName2);
+//  c2->SaveAs(plotName2);
   delete c2;
 
  
@@ -308,7 +308,7 @@ qcd->Scale(1./qcd->Integral());
   	central->GetYaxis()->SetTitle("C_{F}"); central->GetYaxis()->SetTitleSize(0.05);
         central->GetXaxis()->SetTitle(Xtitle); central->GetXaxis()->SetTitleSize(0.05);
   
-  c3->SaveAs("plots/Control/QCD/Corrections.pdf");
+//  c3->SaveAs("plots/Control/QCD/Corrections.pdf");
   delete c3;
   
   
@@ -420,7 +420,7 @@ THStack *hsge4 = new THStack("hs","test");
     
   }else{
     plotName4 += Variable+"QCDest";  
-    plotName4 += Nbtags+".pdf";
+    plotName4 += ".png";
   }
  
  
@@ -539,7 +539,7 @@ TH1D* getQCD(double weight){
 TText* doPrelim(float x, float y)
 {
   std::ostringstream stream;
-  stream  << "#mu, #geq 3 jets, 0 b-tags                  CMS Preliminary, L = 5.8 fb^{-1}";   
+  stream  << "#mu, #geq 4 jets                      CMS Preliminary, L = 5.8 fb^{-1}";   
 
   TLatex* text = new TLatex(x, y, stream.str().c_str());
   //text->SetTextAlign(33);  //left

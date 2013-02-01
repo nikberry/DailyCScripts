@@ -15,8 +15,8 @@
 #include "tdrstyle.C"
 
 
-double etaFit(TString bin, TString valReturn);
-TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj);
+double etaFit(TString bin, TString valReturn, TString dir);
+TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj, TString dir);
 TText* doPrelim(float x, float y);
 TH1D* getQCD(int rebinFact);
 void fcn(int& npar, double* deriv, double& f, double par[], int flag);
@@ -38,10 +38,11 @@ double Nwjets, Nzjets, NQCD;
 
 //currently set up to run first bin.. can change what to read in the read file bit
 void runDiff(){
-etaFit("0-25", "measured");
+TString dir = "central";
+etaFit("Binned_MET_Analysis/RecoMET_bin_0-25", "measured", dir);
 }
 
-double etaFit(TString bin, TString valReturn){
+double etaFit(TString bin, TString valReturn, TString dir){
 setTDRStyle();
 
 bool savePlots = false;
@@ -55,7 +56,7 @@ bool inclW = false;
 
 //choose object
 TString Obj = bin;
-int rebinFact = 10;
+int rebinFact = 1;
 
 double MinX = 0.;
 double MaxX = 2.6;
@@ -63,35 +64,58 @@ double MaxX = 2.6;
 TString Xtitle = "#left|#eta#right|_{#mu}";
 
 //Data
-data = getSample("SingleMu", 1, rebinFact, Obj);
+data = getSample("SingleMu", 1, rebinFact, Obj, "central");
 
 //MC
-TH1D* tt = getSample("TTJet", lumi*225.2/6920475, rebinFact, Obj);
-TH1D* tt_tot = getSample("TTJet", lumi*225.2/6920475, rebinFact, "Muon");
+TH1D* tt = getSample("TTJet", lumi*225.2/6920475, rebinFact, Obj, dir);
+TH1D* tt_tot = getSample("TTJet", lumi*225.2/6920475, rebinFact, "Muon", dir);
 
 TH1D* wjets;
-//TH1D* w1jets = getSample("W1Jet", lumi*5400.0/23140779, rebinFact, Obj);
-TH1D* w2jets = getSample("W2Jets", lumi*1750.0/34041404, rebinFact, Obj);
-TH1D* w3jets = getSample("W3Jets", lumi*519.0/15536443, rebinFact, Obj);
-TH1D* w4jets = getSample("W4Jets", lumi*214.0/13370904, rebinFact, Obj);
+//TH1D* w1jets = getSample("W1Jet", lumi*5400.0/23140779, rebinFact, Obj, dir);
+TH1D* w2jets = getSample("W2Jets", lumi*1750.0/34041404, rebinFact, Obj, dir);
+TH1D* w3jets = getSample("W3Jets", lumi*519.0/15536443, rebinFact, Obj, dir);
+TH1D* w4jets = getSample("W4Jets", lumi*214.0/13370904, rebinFact, Obj, dir);
 
 TH1D* zjets;
-//TH1D* z1jets = getSample("DY1JetsToLL", lumi*561.0/24042904, rebinFact, Obj);
-TH1D* z2jets = getSample("DY2JetsToLL", lumi*181.0/21835749, rebinFact, Obj);
-TH1D* z3jets = getSample("DY3JetsToLL", lumi*51.1/11010628, rebinFact, Obj);
-TH1D* z4jets = getSample("DY4JetsToLL", lumi*23.04/6391785, rebinFact, Obj);
+//TH1D* z1jets = getSample("DY1JetsToLL", lumi*561.0/24042904, rebinFact, Obj, dir);
+TH1D* z2jets = getSample("DY2JetsToLL", lumi*181.0/21835749, rebinFact, Obj, dir);
+TH1D* z3jets = getSample("DY3JetsToLL", lumi*51.1/11010628, rebinFact, Obj, dir);
+TH1D* z4jets = getSample("DY4JetsToLL", lumi*23.04/6391785, rebinFact, Obj, dir);
 
 TH1D* qcd = getQCD(rebinFact);
-TH1D* qcd_mc = getSample("QCD_Pt_20_MuEnrichedPt_15", lumi*34679.3/8500505, rebinFact, Obj);
+
+TH1D* qcd_mc = getSample("QCD_Pt-15to20_MuEnrichedPt5",   lumi*7.022e8 * 0.0039/1722678, rebinFact, Obj, dir);
+TH1D* qcd2 = getSample("QCD_Pt-20to30_MuEnrichedPt5",   lumi*2.87e8 * 0.0065/8486893, rebinFact, Obj, dir);
+TH1D* qcd3 = getSample("QCD_Pt-30to50_MuEnrichedPt5",   lumi*6.609e7 * 0.0122/8928999, rebinFact, Obj, dir);
+TH1D* qcd4 = getSample("QCD_Pt-50to80_MuEnrichedPt5",   lumi*8082000.0 * 0.0218/7256011, rebinFact, Obj, dir);
+TH1D* qcd5 = getSample("QCD_Pt-80to120_MuEnrichedPt5",  lumi*1024000.0 * 0.0395/9030624, rebinFact, Obj, dir);
+TH1D* qcd6 = getSample("QCD_Pt-120to170_MuEnrichedPt5", lumi*157800.0 * 0.0473/8500505, rebinFact, Obj, dir);
+TH1D* qcd7 = getSample("QCD_Pt-170to300_MuEnrichedPt5", lumi*34020.0 * 0.0676/7662483, rebinFact, Obj, dir);
+TH1D* qcd8 = getSample("QCD_Pt-300to470_MuEnrichedPt5", lumi*1757.0 * 0.0864/7797481, rebinFact, Obj, dir);
+TH1D* qcd9 = getSample("QCD_Pt-470to600_MuEnrichedPt5", lumi*115.2 * 0.1024/2995767, rebinFact, Obj, dir);
+TH1D* qcd10 = getSample("QCD_Pt-800to1000_MuEnrichedPt5",lumi*3.57 * 0.1033/4047142, rebinFact, Obj, dir);
+TH1D* qcd11 = getSample("QCD_Pt-1000_MuEnrichedPt5",     lumi*0.774 * 0.1097/3807263, rebinFact, Obj, dir);
+
+qcd_mc->Add(qcd2);
+qcd_mc->Add(qcd3);
+qcd_mc->Add(qcd4);
+qcd_mc->Add(qcd5);
+qcd_mc->Add(qcd6);
+qcd_mc->Add(qcd7);
+qcd_mc->Add(qcd8);
+qcd_mc->Add(qcd9);
+qcd_mc->Add(qcd10);
+qcd_mc->Add(qcd11);
+
 qcd->Scale(qcd_mc->Integral());
 cout << "NQCD: " << qcd_mc->Integral() << endl;
 
-TH1D* top_t = getSample("T_t-channel", lumi*56.4/3757707, rebinFact, Obj);
-TH1D* top_tw = getSample("T_tW-channel", lumi*11.1/497395, rebinFact, Obj);
-TH1D* top_s = getSample("T_s-channel", lumi*3.79/249516, rebinFact, Obj);
-TH1D* tbar_t = getSample("Tbar_t-channel", lumi*30.7/1934817, rebinFact, Obj);
-TH1D* tbar_tw = getSample("Tbar_tW-channel", lumi*11.1/493239, rebinFact, Obj);
-TH1D* tbar_s = getSample("Tbar_s-channel", lumi*1.76/139948, rebinFact, Obj);
+TH1D* top_t = getSample("T_t-channel", lumi*56.4/3757707, rebinFact, Obj, dir);
+TH1D* top_tw = getSample("T_tW-channel", lumi*11.1/497395, rebinFact, Obj, dir);
+TH1D* top_s = getSample("T_s-channel", lumi*3.79/249516, rebinFact, Obj, dir);
+TH1D* tbar_t = getSample("Tbar_t-channel", lumi*30.7/1934817, rebinFact, Obj, dir);
+TH1D* tbar_tw = getSample("Tbar_tW-channel", lumi*11.1/493239, rebinFact, Obj, dir);
+TH1D* tbar_s = getSample("Tbar_s-channel", lumi*1.76/139948, rebinFact, Obj, dir);
 
 //make combined top and single top template
 TH1D* top = (TH1D*)tt->Clone("top");
@@ -100,26 +124,26 @@ top->Add(top_t); top->Add(top_tw);top->Add(top_s); top->Add(tbar_t); top->Add(tb
 //sum single top into one
 TH1D* single_top = (TH1D*)top_t->Clone("single top");
 single_top->Add(top_tw);single_top->Add(top_s); single_top->Add(tbar_t); single_top->Add(tbar_tw);single_top->Add(tbar_s);
-  
+
   
 THStack *hs = new THStack("hs","test");
 
   hs->Add(qcd);
     
   if(inclZ == true){
-  zjets = getSample("DYJetsToLL", lumi*5745.25/30457954, rebinFact, Obj);
+  zjets = getSample("DYJetsToLL", lumi*5745.25/30457954, rebinFact, Obj, dir);
 
   }else{
-  zjets  = getSample("DY1JetsToLL", lumi*561.0/24042904, rebinFact, Obj);
+  zjets  = getSample("DY1JetsToLL", lumi*561.0/24042904, rebinFact, Obj, dir);
   zjets->Add(z2jets);
   zjets->Add(z3jets);
   zjets->Add(z4jets);  
   }
   
   if(inclW == true){
-  wjets = getSample("WJetsToLNu", lumi*37509/57708550, rebinFact, Obj);
+  wjets = getSample("WJetsToLNu", lumi*37509/57708550, rebinFact, Obj, dir);
   }else{
-  wjets = getSample("W1Jet", lumi*5400.0/23140779, rebinFact, Obj); 
+  wjets = getSample("W1Jet", lumi*5400.0/23140779, rebinFact, Obj, dir); 
   wjets->Add(w2jets);
   wjets->Add(w3jets);
   wjets->Add(w4jets);
@@ -233,7 +257,7 @@ bg_fit->Scale(1./ bg_fit->Integral());
 	
 	TText* textPrelim2 = doPrelim(0.17,0.96);
 	textPrelim2->Draw();
-  c2->SaveAs("plots/Fits/Templates"+bin+".png");
+  c2->SaveAs("plots/Fits/"+bin+"_Template.png");
   delete c2;
  }
  
@@ -331,7 +355,7 @@ NQCD = qcd->Integral();
 	
 	TText* textPrelim3 = doPrelim(0.17,0.96);
 	textPrelim3->Draw();
-   c3->SaveAs("plots/Fits/Fit"+bin+".png");
+    c3->SaveAs("plots/Fits/"+bin+"_Fit.png");
     delete c3;
 
  }
@@ -346,17 +370,36 @@ return (((outpar[0]+err[0]-single_top->Integral())/ tt_tot->Integral())*225.2)-(
 return (((tt->Integral())/ tt_tot->Integral())*225.2);
 }
 
+return 0;
+
 }
 
 
-TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj){
-	TString dir = "rootFiles/";
-	
-	TFile* file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj, TString dir){
 		
-	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/Ref selection/"+Obj+"/muon_AbsEta_2btags");
-	TH1D* plot2 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/Ref selection/"+Obj+"/muon_AbsEta_3btags");
-	TH1D* plot3 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/Ref selection/"+Obj+"/muon_AbsEta_4orMoreBtags");
+	TFile* file = new TFile();
+	
+	if(dir == "central")
+	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "JES_up")
+	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_plusJES.root");
+	else if(dir == "JES_down")
+	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_minusJES.root");
+	
+	TH1D* plot; 
+	TH1D* plot2;
+	TH1D* plot3;
+	
+	if(Obj=="Muon"){
+	plot = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+"/muon_AbsEta_2btags");
+	plot2 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+"/muon_AbsEta_3btags");
+	plot3 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+"/muon_AbsEta_4orMoreBtags");
+	}else{
+	plot = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+"/muon_absolute_eta_2btags");
+	plot2 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+"/muon_absolute_eta_3btags");
+	plot3 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+"/muon_absolute_eta_4orMoreBtags");
+	}
+
 
 	plot->Add(plot2);
 	plot->Add(plot3);
@@ -378,9 +421,10 @@ TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj){
 	plot->SetLineColor(kMagenta);
 	}
 	
-	plot->Scale(weight);
+	//plot->Scale(weight);
 	plot->Rebin(rebinFact);
 	
+	//file->Close();
 	return plot;
 
 }
@@ -409,7 +453,7 @@ TH1D* getQCD(int rebinFact){
 	copyplot->SetLineColor(kYellow);
 	copyplot->SetMarkerStyle(1);
 	copyplot->Scale(1./copyplot->Integral());	
-	copyplot->Rebin(rebinFact/10);
+	copyplot->Rebin(rebinFact);
 	return copyplot;
 
 }

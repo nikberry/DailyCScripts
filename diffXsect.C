@@ -1,35 +1,70 @@
 #include "etaFit.C"
 #include "TString.h"
 #include "TLatex.h"
+#include <vector>
 
 void diffXsect();
 
 void diffXsect(){
 
-int Nbins = 5;
-
 //MET will need choice of variable at the top
+TString Variable ="_MET";
+int Nbins = 6;
+TString bins[6] = {"0-25", "25-45", "45-70", "70-100", "100-150", "150-inf"};
+double width[6] = {25, 20, 25, 30, 50, 100};
+double xbins[7] = {1,25,45,70,100,150, 250}; 
+TString varBin = "Binned_MET_Analysis/RecoMET_bin_";
+
+//HT
+//TString Variable ="_HT";
+// int Nbins = 8;
+// TString bins[8] = {"0-50", "50-150", "150-250", "250-350", "350-450", "450-650", "650-1100", "1100-inf"};
+// double width[8] = {50,100,100,100,100,200,450,400};
+// double xbins[9] = {1,50,150,250,350,450,650,1100, 1500}; 
+// TString varBin = "Binned_HT_Analysis/HT_bin_";
+
+//ST
+//TString Variable ="_ST";
+// int Nbins = 8;
+// TString bins[8] = {"0-150", "150-250", "250-350", "350-450", "450-550", "550-750", "750-1250", "1250-inf"};
+// double width[8] = {150,100,100,100,100,200,500,500};
+// double xbins[9] = {1,150,250,350,450,550,750,1250, 1750}; 
+// TString varBin = "Binned_ST_Analysis/ST_with_RecoMET_bin_";
+
+//MT
+//TString Variable ="_MT";
+// int Nbins = 5;
+// TString bins[5] = {"0-40", "40-65", "65-85", "85-150", "150-inf"};
+// double width[5] = {40,25,20,65,50};
+// double xbins[6] = {1,40,65,85,150,200}; 
+// TString varBin = "Binned_MT_Analysis/MT_with_RecoMET_bin_";
+
 double sigmaVal[Nbins];
 double sigmaErr[Nbins];
 double madgraphVals[Nbins];
 
-TString bins[5] = {"0-25", "25-45", "45-70", "70-100", "100-inf"};
-double width[5] = {25, 20, 25, 30, 50};
-double xbins[6]= {1,25,45,70,100,150}; 
-
-//TString Variables[N] = {"DeltaPhi_lepton_MET_", "Transverse_Mass_", "METsignificance_", "MET_", "MET_phi_"};
 double totXsect = 0;
+//sample
+//TString dir = "central";
+//TString dir = "JES_up";
+TString dirs[3] = {"central","JES_up","JES_down"};
 
+//loop over systematics
+for(int sys = 0; sys < 3; sys++){
+TString dir  = dirs[sys];
 
+//loop over bins of distribution
 for(int i = 0; i < Nbins; i++){
 
-TString bin = "BinnedMETAnalysis/Muon_RecoMET_bin_";
-
+TString bin = varBin;
 bin += bins[i];
-sigmaVal[i] = etaFit(bin, "measured");
-sigmaErr[i] = etaFit(bin, "measuredErr");
 
-madgraphVals[i] = etaFit(bin, "madgraph");
+cout <<  bin << endl;
+
+sigmaVal[i] = etaFit(bin, "measured",dir);
+sigmaErr[i] = etaFit(bin, "measuredErr",dir);
+
+madgraphVals[i] = etaFit(bin, "madgraph",dir);
 
 totXsect += sigmaVal[i];
 }
@@ -50,11 +85,11 @@ cout << bins[i] << ": " << " = " << sigmaVal[i]/(totXsect*width[i]) << endl;
 }
 cout << "cross section is:  " <<  totXsect << endl;  
 
-   //measured histo
-   TH1D *muon_part  = new TH1D("muon part", "", 5, xbins);  //muon
+   //measured histo will have to put name of systematic in here to write into file
+   TH1D *muon_part  = new TH1D(dir, "", Nbins, xbins);  //muon
    
    //different generators
-   TH1D *madgraph  = new TH1D("madgraph", "", 5, xbins); 
+   TH1D *madgraph  = new TH1D("madgraph", "", Nbins, xbins); 
 	madgraph->SetLineColor(kRed);
 	
 	for(int i = 0; i < Nbins; i++){
@@ -93,7 +128,7 @@ cout << "cross section is:  " <<  totXsect << endl;
        TText* textPrelim = doPrelim(0.16,0.96); 
        textPrelim->Draw();
        
-       c->SaveAs("plots/Measurments/partialXsect.png");
+       c->SaveAs("plots/Measurments/partialXsect"+Variable+".png");
 	
 	//normailise
 	for(int i = 0; i < Nbins; i++){
@@ -126,7 +161,7 @@ cout << "cross section is:  " <<  totXsect << endl;
    
        textPrelim->Draw();
        
-       c2->SaveAs("plots/Measurments/partialXsectNorm.png");  
+       c2->SaveAs("plots/Measurments/partialXsectNorm"+Variable+".png");  
        
        	//normailise and differential
 	for(int i = 0; i < Nbins; i++){
@@ -158,9 +193,16 @@ cout << "cross section is:  " <<  totXsect << endl;
    
        textPrelim->Draw();
        
-       c3->SaveAs("plots/Measurments/partialXsectNormDiff.png"); 
+       c3->SaveAs("plots/Measurments/partialXsectNormDiff"+Variable+".png"); 
        
-       
+       //will need to change MET for other variables
+       TFile resultsfile("outFiles/diffResults"+Variable+".root", "RECREATE", "comment");
+
+       muon_part->Write();
+       resultsfile.Write();
+       resultsfile.Close();
+
+}//end loop over systematic
        
 }
 
