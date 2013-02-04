@@ -13,7 +13,7 @@
 #include <sstream>
 #include <iomanip>
 #include "tdrstyle.C"
-
+#include "TROOT.h"
 
 double etaFit(TString bin, TString valReturn, TString dir);
 TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj, TString dir);
@@ -21,9 +21,11 @@ TText* doPrelim(float x, float y);
 TH1D* getQCD(int rebinFact);
 void fcn(int& npar, double* deriv, double& f, double par[], int flag);
 
+using namespace std;
+
 void runDiff();
 
-double lumi = 5800;
+double lumi = 5814;
 
 //global histos for fit
 TH1D* data; 
@@ -53,6 +55,11 @@ double Nwjets, Nzjets, NQCD;
 
 bool inclZ = false;
 bool inclW = false;
+
+if(dir == "Scale_up" || dir == "Scale_down"){
+inclZ = true;
+inclW = true;
+}
 
 //choose object
 TString Obj = bin;
@@ -274,7 +281,7 @@ NQCD = qcd->Integral();
   TMinuit minuit(npar);
   minuit.SetFCN(fcn);
 
-  minuit.SetPrintLevel(1);
+  minuit.SetPrintLevel(-1);
   minuit.SetErrorDef(1.);
   
   
@@ -363,11 +370,12 @@ NQCD = qcd->Integral();
 //cout << "cross section is:  " <<  ((outpar[0]-single_top->Integral())/ tt_tot->Integral())*225.2 << endl;
 
 if(valReturn == "measured"){
-return ((outpar[0]-single_top->Integral())/ tt_tot->Integral())*225.2;
+return outpar[0];
 }else if(valReturn == "measuredErr"){
-return (((outpar[0]+err[0]-single_top->Integral())/ tt_tot->Integral())*225.2)-(((outpar[0]-single_top->Integral())/ tt_tot->Integral())*225.2);
+return err[0];
 }else if(valReturn == "madgraph"){
-return (((tt->Integral())/ tt_tot->Integral())*225.2);
+return tt->Integral();
+
 }
 
 return 0;
@@ -379,16 +387,50 @@ TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj, TStri
 		
 	TFile* file = new TFile();
 	
-	if(dir == "central")
-	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
-	else if(dir == "JES_up")
+	if(dir == "central" || (dir == "Scale_up_tt" && sample != "TTJet") || (dir == "Scale_down_tt" && sample != "TTJet") || ((dir == "Scale_up" && sample != "WJetsToLNu") && (dir == "Scale_up"  && sample != "DYJetsToLL"))  || ((dir == "Scale_down" && sample != "WJetsToLNu") && (dir == "Scale_down"  && sample != "DYJetsToLL")) || (dir == "Match_up_tt" && sample != "TTJet") || (dir == "Match_down_tt" && sample != "TTJet") || ((dir == "Match_up" && sample != "WJetsToLNu") && (dir == "Match_up"  && sample != "DYJetsToLL"))  || ((dir == "Match_down" && sample != "WJetsToLNu") && (dir == "Match_down"  && sample != "DYJetsToLL"))){
+	file = new TFile("rootFilesV2/central/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	}else if(dir == "JES_up")
 	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_plusJES.root");
 	else if(dir == "JES_down")
 	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_minusJES.root");
+	else if(dir == "BJet_up")
+	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_plusBjet.root");
+	else if(dir == "BJet_down")
+	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_minusBJet.root");
+	else if(dir == "PU_up")
+	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_PU_72765mb.root");
+	else if(dir == "PU_down")
+	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_PU_65835mb.root");
+	else if(dir == "Scale_up_tt" && sample == "TTJet")
+	file = new TFile("rootFilesV2/"+ dir +"/TTJets-scaleup_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Scale_down_tt" && sample == "TTJet")
+	file = new TFile("rootFilesV2/"+ dir +"/TTJets-scaledown_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Scale_up" && sample == "WJetsToLNu")
+	file = new TFile("rootFilesV2/"+ dir +"/WJets-scaleup_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Scale_up" && sample == "DYJetsToLL")
+	file = new TFile("rootFilesV2/"+ dir +"/ZJets-scaleup_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Scale_down" && sample == "WJetsToLNu")
+	file = new TFile("rootFilesV2/"+ dir +"/WJets-scaledown_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Scale_down" && sample == "DYJetsToLL")
+	file = new TFile("rootFilesV2/"+ dir +"/ZJets-scaledown_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Match_up_tt" && sample == "TTJet")
+	file = new TFile("rootFilesV2/"+ dir +"/TTJets-matchingup_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Match_down_tt" && sample == "TTJet")
+	file = new TFile("rootFilesV2/"+ dir +"/TTJets-matchingdown_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Match_up" && sample == "WJetsToLNu")
+	file = new TFile("rootFilesV2/"+ dir +"/WJets-matchingup_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Match_up" && sample == "DYJetsToLL")
+	file = new TFile("rootFilesV2/"+ dir +"/ZJets-matchingup_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Match_down" && sample == "WJetsToLNu")
+	file = new TFile("rootFilesV2/"+ dir +"/WJets-matchingdown_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(dir == "Match_down" && sample == "DYJetsToLL")
+	file = new TFile("rootFilesV2/"+ dir +"/ZJets-matchingdown_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	
 	TH1D* plot; 
 	TH1D* plot2;
 	TH1D* plot3;
+	
+	
 	
 	if(Obj=="Muon"){
 	plot = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+"/muon_AbsEta_2btags");
@@ -424,7 +466,9 @@ TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj, TStri
 	//plot->Scale(weight);
 	plot->Rebin(rebinFact);
 	
-	//file->Close();
+	plot->SetDirectory(gROOT);
+	
+	file->Close();
 	return plot;
 
 }
@@ -454,8 +498,10 @@ TH1D* getQCD(int rebinFact){
 	copyplot->SetMarkerStyle(1);
 	copyplot->Scale(1./copyplot->Integral());	
 	copyplot->Rebin(rebinFact);
+	
+	//file->Close("R");
 	return copyplot;
-
+	//file->Close();
 }
 
 TText* doPrelim(float x, float y)

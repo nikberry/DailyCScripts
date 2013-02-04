@@ -21,6 +21,7 @@ TText* doPrelim(float x, float y);
 double lumi = 5800;
 //stuff to choose
 bool logPlot = false; //true for log plot
+bool savePlots = true;
 int rebinFact = 10;
 
 //isolation selection
@@ -199,8 +200,9 @@ THStack *qcdstack = new THStack("hs","test");
     plotName += Nbtags+".pdf";
   }
  
- 
-//  c1->SaveAs(plotName);
+if(savePlots == true){ 
+  c1->SaveAs(plotName);
+  }
   delete c1;
 
  TH1D*dataclone = (TH1D*)data->Clone("dataclone");
@@ -251,8 +253,9 @@ data->SetBinError(sqrt(pow(dataclone->GetBinError(i+1),2)+pow(0.5*tt->GetBinCont
     plotName2 += Nbtags+".pdf";
   }
 
- 
-//  c2->SaveAs(plotName2);
+if(savePlots == true){ 
+  c2->SaveAs(plotName2);
+  }
   delete c2;
 
  
@@ -295,6 +298,8 @@ central->Add(central10);
 central->Add(central11);
 }
 
+double qcdTot = central->Integral();
+
 central->Scale(1./central->Integral());
 qcd->Scale(1./qcd->Integral());
 
@@ -307,8 +312,9 @@ qcd->Scale(1./qcd->Integral());
 	central->SetAxisRange(MinX, MaxX);
   	central->GetYaxis()->SetTitle("C_{F}"); central->GetYaxis()->SetTitleSize(0.05);
         central->GetXaxis()->SetTitle(Xtitle); central->GetXaxis()->SetTitleSize(0.05);
-  
-//  c3->SaveAs("plots/Control/QCD/Corrections.pdf");
+if(savePlots ==true){  
+  c3->SaveAs("plots/Control/QCD/Corrections.pdf");
+  }
   delete c3;
   
   
@@ -356,8 +362,8 @@ TH1D* tbar_tw_ge4 = getCentral("Tbar_tW-channel", lumi*11.1/493239);
 TH1D* tbar_s_ge4 = getCentral("Tbar_s-channel", lumi*1.76/139948);
 
 TH1D* qcd_ge4 = getQCD(lumi*34679.3/8500505);
-TH1D* qcd_mc = getCentral("QCD_Pt_20_MuEnrichedPt_15", lumi*34679.3/8500505);
-qcd_ge4->Scale(qcd_mc->Integral());
+//TH1D* qcd_mc = getCentral("QCD_Pt_20_MuEnrichedPt_15", lumi*34679.3/8500505);
+qcd_ge4->Scale(qcdTot);
 
 THStack *hsge4 = new THStack("hs","test");
 
@@ -423,8 +429,9 @@ THStack *hsge4 = new THStack("hs","test");
     plotName4 += ".png";
   }
  
- 
+ if(savePlots==true){	
   c4->SaveAs(plotName4);
+  }
   delete c4;
 
 
@@ -434,11 +441,11 @@ THStack *hsge4 = new THStack("hs","test");
 
 
 TH1D* getSample(TString sample, double weight){
-	TString dir = "rootFiles/";
-	TFile* file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	TString dir = "rootFilesV2/central/";
+	TFile* file = new TFile(dir + sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
 	
-	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"0btag");
+	TH1D* plot = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"0btag");
 
         if(sample == "TTJet"){
 	plot->SetFillColor(kRed+1);
@@ -457,7 +464,7 @@ TH1D* getSample(TString sample, double weight){
 	plot->SetLineColor(kMagenta);
 	}
     
-	plot->Scale(weight);
+	//plot->Scale(weight);
 	plot->Rebin(rebinFact);
 	
 	return plot;
@@ -465,16 +472,16 @@ TH1D* getSample(TString sample, double weight){
 }
 
 TH1D* getCentral(TString sample, double weight){
-	TString dir = "rootFiles/";
-	TFile* file = new TFile(dir + sample + "_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	TString dir = "rootFilesV2/central/";
+	TFile* file = new TFile(dir + sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
 	
-	TH1D* plot = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/Ref selection/"+Obj+Variable+"0btag");
+	TH1D* plot = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+Variable+"0btag");
 	
-	TH1D* plot1 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"1btag");
-	TH1D* plot2 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"2btags");
-        TH1D* plot3 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
-	TH1D* plot4 = (TH1D*) file->Get("TTbarPlusMetAnalysis/MuPlusJets/"+Isolation+Obj+Variable+"4orMoreBtags");
+	TH1D* plot1 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"1btag");
+	TH1D* plot2 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"2btags");
+        TH1D* plot3 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
+	TH1D* plot4 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"4orMoreBtags");
 	
 	plot->Add(plot1);
 	plot->Add(plot2);
@@ -498,7 +505,7 @@ TH1D* getCentral(TString sample, double weight){
 	plot->SetLineColor(kMagenta);
 	}
 	
-	plot->Scale(weight);
+	//plot->Scale(weight);
 	plot->Rebin(rebinFact);
 	
 	return plot;
