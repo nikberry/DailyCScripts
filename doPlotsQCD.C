@@ -21,7 +21,7 @@ TText* doPrelim(float x, float y);
 double lumi = 5800;
 //stuff to choose
 bool logPlot = false; //true for log plot
-bool savePlots = true;
+bool savePlots = false; //appart from the last plot
 int rebinFact = 10;
 
 //isolation selection
@@ -192,11 +192,11 @@ THStack *qcdstack = new THStack("hs","test");
   TString plotName("plots/Control/QCD/");
   
   if(logPlot ==true){
-    plotName += Variable+"Test_Log";
+    plotName += Variable+"_Log";
     plotName += Nbtags+".pdf";
     
   }else{
-    plotName += Variable+"Test";  
+    plotName += Variable;  
     plotName += Nbtags+".pdf";
   }
  
@@ -206,13 +206,16 @@ if(savePlots == true){
   delete c1;
 
  TH1D*dataclone = (TH1D*)data->Clone("dataclone");
-  
+ TH1D*mc_sub = (TH1D*)tt->Clone("mc_clone");
+ 
+  mc_sub->Add(top_t); mc_sub->Add(top_tw); mc_sub->Add(top_s); mc_sub->Add(tbar_t); mc_sub->Add(tbar_tw); mc_sub->Add(tbar_s); mc_sub->Add(z1jets); mc_sub->Add(z2jets); mc_sub->Add(z3jets); mc_sub->Add(z4jets);  mc_sub->Add(w1jets); mc_sub->Add(w2jets); mc_sub->Add(w3jets); mc_sub->Add(w4jets); 
+ 
   //subtract samples
-  data->Add(tt, -1);
-  data->Add(top_t, -1); data->Add(top_tw, -1); data->Add(top_s, -1); data->Add(tbar_t, -1); data->Add(tbar_tw, -1); data->Add(tbar_s, -1); data->Add(z1jets, -1); data->Add(z2jets, -1); data->Add(z3jets, -1); data->Add(z4jets, -1);  data->Add(w1jets, -1); data->Add(w2jets, -1); data->Add(w3jets, -1); data->Add(w4jets, -1); 
+  data->Add(mc_sub, -1);
 
 for(int i = 0; i<data->GetNbinsX(); i++){
-data->SetBinError(sqrt(pow(dataclone->GetBinError(i+1),2)+pow(0.5*tt->GetBinContent(i+1),2)+ pow(0.5*top_t->GetBinContent(i+1),2) + pow(0.5*top_tw->GetBinContent(i+1),2) + pow(0.5*top_s->GetBinContent(i+1),2) + pow(0.5*tbar_t->GetBinContent(i+1),2) + pow(0.5*tbar_tw->GetBinContent(i+1),2) + pow(0.5*tbar_s->GetBinContent(i+1),2) + pow(0.5*z1jets->GetBinContent(i+1),2) + pow(0.5*z2jets->GetBinContent(i+1),2) + pow(0.5*z3jets->GetBinContent(i+1),2) + pow(0.5*z4jets->GetBinContent(i+1),2) +  pow(0.5*w1jets->GetBinContent(i+1),2) + pow(0.5*w2jets->GetBinContent(i+1),2) + pow(0.5*w3jets->GetBinContent(i+1),2) + pow(0.5*w4jets->GetBinContent(i+1),2)),i+1); 
+data->SetBinError(i+1, sqrt(pow(dataclone->GetBinError(i+1),2)+pow(0.5*mc_sub->GetBinContent(i+1),2)));
+
 }   
     
     //draw histos to files
@@ -299,6 +302,7 @@ central->Add(central11);
 }
 
 double qcdTot = central->Integral();
+TH1D*qcd_mc = (TH1D*)central->Clone("qcd_mc_clone");
 
 central->Scale(1./central->Integral());
 qcd->Scale(1./qcd->Integral());
@@ -307,13 +311,14 @@ qcd->Scale(1./qcd->Integral());
 	
 	central->Divide(qcd);
 	central->Draw("E");
+	central->SetMaximum(5);
 	central->SetLineColor(kBlack);	
 	central->SetMarkerStyle(20);
 	central->SetAxisRange(MinX, MaxX);
   	central->GetYaxis()->SetTitle("C_{F}"); central->GetYaxis()->SetTitleSize(0.05);
         central->GetXaxis()->SetTitle(Xtitle); central->GetXaxis()->SetTitleSize(0.05);
 if(savePlots ==true){  
-  c3->SaveAs("plots/Control/QCD/Corrections.pdf");
+  c3->SaveAs("plots/Control/QCD/QCD_Corrections.pdf");
   }
   delete c3;
   
@@ -366,8 +371,9 @@ TH1D* qcd_ge4 = getQCD(lumi*34679.3/8500505);
 qcd_ge4->Scale(qcdTot);
 
 THStack *hsge4 = new THStack("hs","test");
-
-  hsge4->Add(qcd_ge4);
+  
+  hsge4->Add(qcd_mc);
+  //hsge4->Add(qcd_ge4);
   hsge4->Add(zjets_ge4);
 
   hsge4->Add(wjets_ge4);
@@ -388,6 +394,9 @@ THStack *hsge4 = new THStack("hs","test");
 
   hsge4->Draw();
   data_ge4->Draw("E same");
+  
+  cout << "tot data: " << data_ge4->Integral() << endl;
+  
   data_ge4->SetMarkerStyle(20);
   
   hsge4->GetXaxis()->SetLimits(MinX, MaxX);
@@ -425,13 +434,12 @@ THStack *hsge4 = new THStack("hs","test");
     plotName4 += Nbtags+".pdf";
     
   }else{
-    plotName4 += Variable+"QCDest";  
-    plotName4 += ".png";
+    plotName4 += Variable+"QCD_MC";  
+    plotName4 += ".pdf";
   }
- 
- if(savePlots==true){	
+	
   c4->SaveAs(plotName4);
-  }
+
   delete c4;
 
 
@@ -478,10 +486,10 @@ TH1D* getCentral(TString sample, double weight){
 	
 	TH1D* plot = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+Variable+"0btag");
 	
-	TH1D* plot1 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"1btag");
-	TH1D* plot2 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"2btags");
-        TH1D* plot3 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
-	TH1D* plot4 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"4orMoreBtags");
+	TH1D* plot1 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+Variable+"1btag");
+	TH1D* plot2 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+Variable+"2btags");
+        TH1D* plot3 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+Variable+"3btags");
+	TH1D* plot4 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/Ref selection/"+Obj+Variable+"4orMoreBtags");
 	
 	plot->Add(plot1);
 	plot->Add(plot2);

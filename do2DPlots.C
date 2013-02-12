@@ -52,16 +52,15 @@ void do2DPlots(bool muon, TString variable, TString xtitle, TString ytitle){
   	setTDRStyle();
   	gStyle->SetPalette(1);
 
-	TString dir = "rootFilesBin/";
-	TFile* tt_file = new TFile(dir + "TTJet_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");  
+	TString dir = "rootFilesV2/central/";
+	TFile* tt_file = new TFile(dir + "TTJet_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");  
 
+	TH2D* tt_2d = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"_2btags");
+ 	TH2D* tt_2d_3b = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"_3btags");
+ 	TH2D* tt_2d_4b = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"_4orMoreBtags");
 
-
-TString Nbtags[5] = {"_0btag","_1btag", "_2btags","_3btags",  "_4orMoreBtags"};
-
-for(int i = 2; i < 3; i++){
-
-	TH2D* tt_2d = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+Nbtags[i]);
+	tt_2d->Add(tt_2d_3b);
+	tt_2d->Add(tt_2d_4b);
 
 	tt_2d->Rebin2D(10,10);
   	tt_2d->GetYaxis()->SetTitle(ytitle);
@@ -89,14 +88,11 @@ for(int i = 2; i < 3; i++){
 	
   	TString plotName("plots/"+leptonFolder);
         plotName += variable;
-        plotName += Nbtags[i]+".png";
+        plotName += "_2btags.png";
  
   c->SaveAs(plotName);
   delete c;
 	
-}
-
-
 }
 
 

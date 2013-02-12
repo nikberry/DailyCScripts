@@ -12,23 +12,23 @@
 #include <iomanip>
 #include "tdrstyle.C"
 
-void allCutFlow();
+void doPlotsRelIso();
 TH1D* getSample(TString sample, double weight);
 TText* doPrelim(float x, float y);
 
 double lumi = 5800;
 //stuff to choose
 bool logPlot = true; //true for log plot
-int rebinFact = 1;
+int rebinFact = 2;
 
 //isolation selection
-//TString Isolation = "QCD No Iso/";
-TString Isolation = "Ref selection/";
+TString Isolation = "QCD No Iso/";
+//TString Isolation = "Ref selection/";
 //TString Isolation = "QCD mu+jets PFRelIso/";
 //TString Isolation = "QCD non iso mu+jets/";
 
 // number of btags
-TString Nbtags = "";  //standard  "2btags" , qcd "0btag"
+TString Nbtags = "2btags";  //standard  "2btags" , qcd "0btag"
 
 bool inclZ = false;
 bool inclW = false;
@@ -38,22 +38,18 @@ TString Obj = "Muon/";
 //TString Obj = "MET/";
 
 //muon variables
-const int N = 2;
+const int N = 6;
 TString Variable;
-TString Variables[N] = {"TTbarMuPlusJetsRefSelection", "TTbarMuPlusJetsRefSelectionUnweighted"};
-double MinXs[N] = {0,-2.6 };
-double MaxXs[N] = {2.6,2.6 };
-TString XTitles[N] = {"Cuts", "Cuts"};
+TString Variables[N] = {"muon_AbsEta_", "muon_eta_", "muon_pfIsolation_04_", "muon_pT_", "muon_phi_", "muon_dB_"};
+double MinXs[N] = {0,-2.6 ,0 , 0, -3.2, 0};
+double MaxXs[N] = {2.6,2.6 ,1.5 , 400,3.2 , 0.3};
+TString XTitles[N] = {"#left|#eta#right|_{#mu}", "#eta_{#mu}", "RelIso_{#mu}", "p_{T}(#mu) [GeV]", "#phi_{#mu}", "dB_{#mu}"};
 
-//met variables
-//TString Variable = "patType1CorrectedPFMet/MET_";
-
-
-void allCutFlow(){
+void doPlotsRelIso(){
 setTDRStyle();
 
 //loop over variables
-for(int i = 0; i<1; i++){
+for(int i = 2; i<3; i++){
 double MinX = MinXs[i];
 double MaxX = MaxXs[i];
 Variable = Variables[i];
@@ -65,20 +61,20 @@ TH1D* data = getSample("SingleMu", 1);
 //MC
 TH1D* tt = getSample("TTJet", lumi*225.2/6920475);
 
-//TH1D* wjets = getSample("W1Jet", lumi*37509/57708550);
-TH1D* wjets = getSample("W1Jet", lumi*5400.0/23140779);
+TH1D* wjets = getSample("W1Jet", lumi*37509/57708550);
+TH1D* w1jets = getSample("W1Jet", lumi*5400.0/23140779);
 TH1D* w2jets = getSample("W2Jets", lumi*1750.0/34041404);
 TH1D* w3jets = getSample("W3Jets", lumi*519.0/15536443);
 TH1D* w4jets = getSample("W4Jets", lumi*214.0/13370904);
 
-//TH1D* zjets = getSample("DY1JetsToLL", lumi*5745.25/30457954);
-TH1D* zjets = getSample("DY1JetsToLL", lumi*561.0/24042904);
+TH1D* zjets = getSample("DY1JetsToLL", lumi*5745.25/30457954);
+TH1D* z1jets = getSample("DY1JetsToLL", lumi*561.0/24042904);
 TH1D* z2jets = getSample("DY2JetsToLL", lumi*181.0/21835749);
 TH1D* z3jets = getSample("DY3JetsToLL", lumi*51.1/11010628);
 TH1D* z4jets = getSample("DY4JetsToLL", lumi*23.04/6391785);
 
-//TH1D* qcd = getSample("QCD_Pt-15to20_MuEnrichedPt5",     lumi*34679.3/8500505);
-TH1D* qcd = getSample("QCD_Pt-15to20_MuEnrichedPt5",   lumi*7.022e8 * 0.0039/1722678);
+TH1D* qcd = getSample("QCD_Pt-15to20_MuEnrichedPt5",     lumi*34679.3/8500505);
+TH1D* qcd1 = getSample("QCD_Pt-15to20_MuEnrichedPt5",   lumi*7.022e8 * 0.0039/1722678);
 TH1D* qcd2 = getSample("QCD_Pt-20to30_MuEnrichedPt5",   lumi*2.87e8 * 0.0065/8486893);
 TH1D* qcd3 = getSample("QCD_Pt-30to50_MuEnrichedPt5",   lumi*6.609e7 * 0.0122/8928999);
 TH1D* qcd4 = getSample("QCD_Pt-50to80_MuEnrichedPt5",   lumi*8082000.0 * 0.0218/7256011);
@@ -90,7 +86,6 @@ TH1D* qcd9 = getSample("QCD_Pt-470to600_MuEnrichedPt5", lumi*115.2 * 0.1024/2995
 TH1D* qcd10 = getSample("QCD_Pt-800to1000_MuEnrichedPt5",lumi*3.57 * 0.1033/4047142);
 TH1D* qcd11 = getSample("QCD_Pt-1000_MuEnrichedPt5",     lumi*0.774 * 0.1097/3807263);
 
-TH1D* single_t = getSample("T_t-channel", lumi*56.4/3757707);
 TH1D* top_t = getSample("T_t-channel", lumi*56.4/3757707);
 TH1D* top_tw = getSample("T_tW-channel", lumi*11.1/497395);
 TH1D* top_s = getSample("T_s-channel", lumi*3.79/249516);
@@ -99,32 +94,40 @@ TH1D* tbar_tw = getSample("Tbar_tW-channel", lumi*11.1/493239);
 TH1D* tbar_s = getSample("Tbar_s-channel", lumi*1.76/139948);
 
 THStack *hs = new THStack("hs","test");
-
-  qcd->Add(qcd2);
-  qcd->Add(qcd3);
-  qcd->Add(qcd4);
-  qcd->Add(qcd5);
-  qcd->Add(qcd6);
-  qcd->Add(qcd7);
-  qcd->Add(qcd8);
-  qcd->Add(qcd9);
-  qcd->Add(qcd10);
-  qcd->Add(qcd11);
-
-  hs->Add(qcd);  
-
-  zjets->Add(z2jets);
-  zjets->Add(z3jets);
-  zjets->Add(z4jets);  
-    
+  if(inclQ == true){
+  hs->Add(qcd);
+  }else{
+  hs->Add(qcd1);
+  hs->Add(qcd2);
+  hs->Add(qcd3);
+  hs->Add(qcd4);
+  hs->Add(qcd5);
+  hs->Add(qcd6);
+  hs->Add(qcd7);
+  hs->Add(qcd8);
+  hs->Add(qcd9);
+  hs->Add(qcd10);
+  hs->Add(qcd11);
+  }
+  
+  
+  if(inclZ == true){
   hs->Add(zjets);
-
-
-  wjets->Add(w2jets);
-  wjets->Add(w3jets);
-  wjets->Add(w4jets);  
-
+  }else{
+  hs->Add(z1jets);
+  hs->Add(z2jets);
+  hs->Add(z3jets);
+  hs->Add(z4jets);  
+  }
+  
+  if(inclW == true){
   hs->Add(wjets);
+  }else{
+  hs->Add(w1jets);
+  hs->Add(w2jets);
+  hs->Add(w3jets);
+  hs->Add(w4jets);  
+  }
       
   hs->Add(top_t);
   hs->Add(top_tw);
@@ -133,32 +136,18 @@ THStack *hs = new THStack("hs","test");
   hs->Add(tbar_tw);
   hs->Add(tbar_s);
   
-  single_t->Add(top_tw);
-  single_t->Add(top_s);
-  single_t->Add(tbar_t);
-  single_t->Add(tbar_tw);
-  single_t->Add(tbar_s);
-  
   hs->Add(tt);
 
   //draw histos to files
   TCanvas *c1 = new TCanvas("Plot","Plot",900, 600);
 
- TString step[11] = {"Skim" ,"Cleaning and HLT","one isolated #mu", "loose #mu veto", "loose e veto", "#geq 1 jets", "#geq 2 jets","#geq 3 jets", "#geq 4 jets", "#geq1 CSV b-tag", "#geq2 CSV b-tag" };
- 		
   hs->SetMaximum(data->GetBinContent(data->GetMaximumBin())*1.3);
-  
-  if(logPlot ==true)
-  hs->SetMinimum(100.);
 
   hs->Draw();
-  for(int i =0; i<tt->GetNbinsX(); i++)
-  hs->GetXaxis()->SetBinLabel(i+1, step[i]);
-  
   data->Draw("E same");
   data->SetMarkerStyle(20);
   
-//  hs->GetXaxis()->SetLimits(MinX, MaxX);
+  hs->GetXaxis()->SetLimits(MinX, MaxX);
   hs->GetXaxis()->SetTitle(Xtitle); hs->GetXaxis()->SetTitleSize(0.05);
   hs->GetYaxis()->SetTitle("Number of Events");hs->GetYaxis()->SetTitleSize(0.05);
   
@@ -174,43 +163,32 @@ THStack *hs = new THStack("hs","test");
 	tleg2->AddEntry(wjets , "w+jets", "lf");
 	tleg2->AddEntry(zjets , "z+jets", "lf");
 	tleg2->AddEntry(qcd , "QCD", "lf");
-	
+
 	//tleg2->AddEntry(singtEff, "single-t"      , "l");
 	//tleg2->AddEntry(singtwEff, "single-tW"      , "l");
  	tleg2->Draw("same");	
-	
+
 	TText* textPrelim = doPrelim(0.17,0.96);
 	textPrelim->Draw();
-	
+
   if(logPlot ==true){
   c1->SetLogy();
   }	
   
-  TString plotName("plots/cutFlow/");
+  TString plotName("plots/Control/QCD/");
   
   if(logPlot ==true){
-    plotName += Variable+"_Log";
-    plotName += Nbtags+".png";
+    plotName += Variable+"Log";
+    plotName += ".pdf";
     
   }else{
-    plotName += Variable+"";  
-    plotName += Nbtags+".png";
+    plotName += Variable;  
+    plotName += ".pdf";
   }
  
  
   c1->SaveAs(plotName);
   delete c1;
- 
- //print out
- 
- 
- cout << " & ttbar & wjets & zjets & single-t & qcd & all MC & data " << endl; 
- 
- for(int i = 0; i < tt->GetNbinsX(); i++){
- cout << step[i] << " & " << tt->GetBinContent(i+1) << " & " << wjets->GetBinContent(i+1) << " & " << zjets->GetBinContent(i+1) << " & " << single_t->GetBinContent(i+1) << " & " << qcd->GetBinContent(i+1) << " & " << tt->GetBinContent(i+1) +wjets->GetBinContent(i+1) +zjets->GetBinContent(i+1) +single_t->GetBinContent(i+1) +qcd->GetBinContent(i+1) << " & " << data->GetBinContent(i+1) << endl;
- 
- }
- 
   
   }
   	
@@ -221,8 +199,13 @@ TH1D* getSample(TString sample, double weight){
 	TString dir = "rootFilesV2/central/";
 	TFile* file = new TFile(dir + sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
-	
-	TH1D* plot = (TH1D*) file->Get("EventCount/"+Variable);
+
+	TH1D* plot = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"0btag");
+//	TH1D* plot2 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
+//	TH1D* plot3 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"4orMoreBtags");
+
+//	plot->Add(plot2);
+//	plot->Add(plot3);
 
         if(sample == "TTJet"){
 	plot->SetFillColor(kRed+1);
@@ -240,10 +223,10 @@ TH1D* getSample(TString sample, double weight){
 	plot->SetFillColor(kMagenta);
 	plot->SetLineColor(kMagenta);
 	}
-	
+
 	//plot->Scale(weight);
 	plot->Rebin(rebinFact);
-	
+
 	return plot;
 
 }
@@ -251,7 +234,7 @@ TH1D* getSample(TString sample, double weight){
 TText* doPrelim(float x, float y)
 {
   std::ostringstream stream;
-  stream  << "#mu, #geq 4 jets, #geq 2 b-tags               CMS Preliminary, L = 5.8 fb^{-1}";   
+  stream  << "#mu, #geq 3 jets, #geq 0 b-tags               CMS Preliminary, L = 5.8 fb^{-1}";   
 
   TLatex* text = new TLatex(x, y, stream.str().c_str());
   //text->SetTextAlign(33);  //left

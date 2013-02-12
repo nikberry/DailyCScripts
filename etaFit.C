@@ -47,7 +47,7 @@ etaFit("Binned_MET_Analysis/RecoMET_bin_0-25", "measured", dir);
 double etaFit(TString bin, TString valReturn, TString dir){
 setTDRStyle();
 
-bool savePlots = false;
+bool savePlots = true;
 
 
 //these only need to be global is using constraints
@@ -56,7 +56,7 @@ double Nwjets, Nzjets, NQCD;
 bool inclZ = false;
 bool inclW = false;
 
-if(dir == "Scale_up" || dir == "Scale_down"){
+if(dir == "Scale_up" || dir == "Scale_down" || dir == "Match_up" || dir == "Match_down"){
 inclZ = true;
 inclW = true;
 }
@@ -211,7 +211,7 @@ if(savePlots ==true){
   TString plotName("plots/Control/Muon/");
   
     plotName += "absEta";  
-    plotName += "_ge2btags.png";
+    plotName += "_ge2btags.pdf";
   
 //  c1->SaveAs(plotName);
   delete c1;
@@ -264,7 +264,7 @@ bg_fit->Scale(1./ bg_fit->Integral());
 	
 	TText* textPrelim2 = doPrelim(0.17,0.96);
 	textPrelim2->Draw();
-  c2->SaveAs("plots/Fits/"+bin+"_Template.png");
+  c2->SaveAs("plots/Fits/"+bin+"_Template.pdf");
   delete c2;
  }
  
@@ -286,8 +286,9 @@ NQCD = qcd->Integral();
   
   
   int ierflg = 0;
+  double Nbg=  wjets->Integral()+zjets->Integral()+qcd->Integral();
   string parName[npar] = {"ttbar+single-top", "background"}; //background parameters
-  double par[npar] = {top->Integral(), wjets->Integral()+zjets->Integral()+qcd->Integral()};               //using the MC estimation as the start values 1fb
+  double par[npar] = {top->Integral(), Nbg};               //using the MC estimation as the start values 1fb
   
   cout << "total data events: " << Ntotal << endl;
 
@@ -362,7 +363,7 @@ NQCD = qcd->Integral();
 	
 	TText* textPrelim3 = doPrelim(0.17,0.96);
 	textPrelim3->Draw();
-    c3->SaveAs("plots/Fits/"+bin+"_Fit.png");
+    c3->SaveAs("plots/Fits/"+bin+"_Fit.pdf");
     delete c3;
 
  }
@@ -373,8 +374,8 @@ if(valReturn == "measured"){
 return outpar[0];
 }else if(valReturn == "measuredErr"){
 return err[0];
-}else if(valReturn == "madgraph"){
-return tt->Integral();
+}else if(valReturn == "bgscale"){
+return (outpar[1]/Nbg);
 
 }
 
@@ -387,7 +388,7 @@ TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj, TStri
 		
 	TFile* file = new TFile();
 	
-	if(dir == "central" || (dir == "Scale_up_tt" && sample != "TTJet") || (dir == "Scale_down_tt" && sample != "TTJet") || ((dir == "Scale_up" && sample != "WJetsToLNu") && (dir == "Scale_up"  && sample != "DYJetsToLL"))  || ((dir == "Scale_down" && sample != "WJetsToLNu") && (dir == "Scale_down"  && sample != "DYJetsToLL")) || (dir == "Match_up_tt" && sample != "TTJet") || (dir == "Match_down_tt" && sample != "TTJet") || ((dir == "Match_up" && sample != "WJetsToLNu") && (dir == "Match_up"  && sample != "DYJetsToLL"))  || ((dir == "Match_down" && sample != "WJetsToLNu") && (dir == "Match_down"  && sample != "DYJetsToLL"))){
+	if(dir == "central" || (dir == "Scale_up_tt" && sample != "TTJet") || (dir == "Scale_down_tt" && sample != "TTJet") || ((dir == "Scale_up" && sample != "WJetsToLNu") && (dir == "Scale_up"  && sample != "DYJetsToLL"))  || ((dir == "Scale_down" && sample != "WJetsToLNu") && (dir == "Scale_down"  && sample != "DYJetsToLL")) || (dir == "Match_up_tt" && sample != "TTJet") || (dir == "Match_down_tt" && sample != "TTJet") || ((dir == "Match_up" && sample != "WJetsToLNu") && (dir == "Match_up"  && sample != "DYJetsToLL"))  || ((dir == "Match_down" && sample != "WJetsToLNu") && (dir == "Match_down"  && sample != "DYJetsToLL")) || dir == "UnclusteredEnUp" || dir == "UnclusteredEnDown" || dir == "JetEnUp" || dir == "JetEnDown" || dir == "JetResUp" || dir == "JetResDown" || dir == "TauEnUp" || dir == "TauEnDown" || dir == "MuonEnUp" || dir == "MuonEnDown" || dir == "ElectronEnUp" || dir == "ElectronEnDown"){
 	file = new TFile("rootFilesV2/central/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	}else if(dir == "JES_up")
 	file = new TFile("rootFilesV2/"+ dir +"/"+ sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_plusJES.root");
@@ -425,6 +426,10 @@ TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj, TStri
 	file = new TFile("rootFilesV2/"+ dir +"/WJets-matchingdown_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 	else if(dir == "Match_down" && sample == "DYJetsToLL")
 	file = new TFile("rootFilesV2/"+ dir +"/ZJets-matchingdown_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	else if(sample == "TTJet_MCNLO")
+	file = new TFile("rootFilesV2/central/TTJet_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_MCatNLO.root");
+	else if(sample == "TTJet_POWHEG")
+	file = new TFile("rootFilesV2/central/TTJet_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET_POWHEG.root");
 	
 	TH1D* plot; 
 	TH1D* plot2;
@@ -461,7 +466,8 @@ TH1D* getSample(TString sample, double weight, int rebinFact, TString Obj, TStri
 	}else if(sample == "T_t-channel" || sample == "T_tW-channel" || sample == "T_s-channel" || sample == "Tbar_t-channel" || sample == "Tbar_tW-channel" || sample == "Tbar_s-channel"){
 	plot->SetFillColor(kMagenta);
 	plot->SetLineColor(kMagenta);
-	}
+	}else if(sample == "SingleMu")
+	plot->SetLineColor(kBlack);
 	
 	//plot->Scale(weight);
 	plot->Rebin(rebinFact);
