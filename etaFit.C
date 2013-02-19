@@ -47,7 +47,7 @@ etaFit("Binned_MET_Analysis/RecoMET_bin_0-25", "measured", dir);
 double etaFit(TString bin, TString valReturn, TString dir){
 setTDRStyle();
 
-bool savePlots = true;
+bool savePlots = false;
 
 
 //these only need to be global is using constraints

@@ -33,7 +33,7 @@ TString ytitle[16] = {"N Jets Reco", "Reco Jet 1 Pt (GeV)", "Reco Jet 2 Pt (GeV)
 
 
 
-for(int i =8; i<9; i++){
+for(int i =6; i<7; i++){
 do2DPlots(muon, variable[i], xtitle[i], ytitle[i]);
 //getBinning(muon, variable[i], xtitle[i], ytitle[i]);
 }
@@ -46,7 +46,7 @@ void do2DPlots(bool muon, TString variable, TString xtitle, TString ytitle){
 	if(muon == true){
 		leptonFolder = "MuPlusJets/";
 	}else{
-		leptonFolder = "EPlusJets/";
+		leptonFolder = "EPlusJetsHTstep0/";
 		}	
 		
   	setTDRStyle();
@@ -58,10 +58,14 @@ void do2DPlots(bool muon, TString variable, TString xtitle, TString ytitle){
 	TH2D* tt_2d = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"_2btags");
  	TH2D* tt_2d_3b = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"_3btags");
  	TH2D* tt_2d_4b = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"_4orMoreBtags");
-
+	TH2D* tt_2d_0b = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"_0btag");
+ 	TH2D* tt_2d_1b = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"_1btag");
+	
 	tt_2d->Add(tt_2d_3b);
 	tt_2d->Add(tt_2d_4b);
-
+	tt_2d->Add(tt_2d_0b);
+	tt_2d->Add(tt_2d_1b);
+	
 	tt_2d->Rebin2D(10,10);
   	tt_2d->GetYaxis()->SetTitle(ytitle);
   	tt_2d->GetXaxis()->SetTitle(xtitle); 
@@ -71,14 +75,18 @@ void do2DPlots(bool muon, TString variable, TString xtitle, TString ytitle){
         TCanvas *c= new TCanvas("c","c",10,10,800,600);
 	tt_2d->Draw("COLZ");
 	
-		int bin[10] = {75, 90, 105, 120, 135, 155, 175, 200, 225, 275};//ST
+	//int bin[10] = {75, 90, 105, 120, 135, 155, 175, 200, 225, 275};//ST
 	//int bin[8] = {55, 70, 80, 95, 115, 135, 160, 200}; //hT
-	//int bin[8] = {100,200,300,400}; //hT
-	for(int i = 0; i < 8; i++){
-	TLine *line = new TLine(bin[i]*4,0,bin[i]*4,2000);
-	TLine *liney = new TLine(0,bin[i]*4,2000,bin[i]*4);
-	//TLine *line = new TLine(bin[i],0,bin[i],500);
-	//TLine *liney = new TLine(0,bin[i],500,bin[i]);
+	//int bin[8] = {100,200,300,400}; //mT
+	
+	int bin[7] = {50, 150, 250, 350, 450, 650, 1100}; //ht luke
+	//int bin[7] = {150, 250, 350, 450, 550, 750, 1250}; //st luke
+	
+	for(int i = 0; i < 7; i++){
+//	TLine *line = new TLine(bin[i]*4,0,bin[i]*4,2000);
+//	TLine *liney = new TLine(0,bin[i]*4,2000,bin[i]*4);
+	TLine *line = new TLine(bin[i],0,bin[i],2000);
+	TLine *liney = new TLine(0,bin[i],2000,bin[i]);
 	line->SetLineWidth(2);
 	liney->SetLineWidth(2);
 	liney->Draw();
@@ -88,7 +96,7 @@ void do2DPlots(bool muon, TString variable, TString xtitle, TString ytitle){
 	
   	TString plotName("plots/"+leptonFolder);
         plotName += variable;
-        plotName += "_2btags.png";
+        plotName += "_2btags_step0.pdf";
  
   c->SaveAs(plotName);
   delete c;
@@ -105,8 +113,8 @@ void getBinning(bool muon, TString variable, TString xtitle, TString ytitle){
 		leptonFolder = "EPlusJets/";
 		}
 
-	TString dir = "rootFilesBin/";
-	TFile* tt_file = new TFile(dir + "TTJet_10000pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+	TString dir = "rootFilesV2/central/";
+	TFile* tt_file = new TFile(dir + "TTJet_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
 
 	TH2D* tt_2d = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"_2btags");
         TH2D* tt_2d_b = (TH2D*) tt_file->Get("Binning/"+leptonFolder+variable+"_3btags");
@@ -119,7 +127,7 @@ void getBinning(bool muon, TString variable, TString xtitle, TString ytitle){
 	
 writeStab(tt_2d, "bin", true);
 writeStab(tt_2d, "events", true);
-writeStab(tt_2d, "eventsWeight", true);
+//writeStab(tt_2d, "eventsWeight", true);
 writeStab(tt_2d, "purity", true);
 writeStab(tt_2d, "stability", true);
 
@@ -134,7 +142,11 @@ binMin[0] = 0;
 //	int binCho[9] = {55, 70, 80, 95, 115, 135, 160, 200, 499}; //hT
 //	int binCho[6] = {0, 60, 90, 120, 160, 240}; //mwt
 //	int binCho[5] = {0, 100, 140, 190, 299}; //m3
-	int binCho[11] = {75, 90, 105, 120, 135, 155, 175, 200, 225, 275, 499};
+//	int binCho[11] = {75, 90, 105, 120, 135, 155, 175, 200, 225, 275, 499};
+
+	//int binCho[8] = {50, 150, 250, 350, 450, 650, 1100, 1999}; //ht luke
+	int binCho[8] = {150, 250, 350, 450, 550, 750, 1250, 1999}; //st luke
+
 
 for(int bin = 0; bin<tt_2d->GetNbinsX(); bin++){
 	double purity[60];
@@ -154,26 +166,26 @@ double weight  = 20000*210.5/6920475;
 	binMin[i] = bin;
 	}
 		
-		}else{
-		if(bin == binCho[i]){
-		
-		if(write == "bin"){
-		cout << bin*4 << " & " ;
-	        }else if(write == "events"){
-		cout<<setprecision(2) << tt_2d->Integral(0,tt_2d->GetNbinsX()+1 ,binMin[i],bin+1) << " & " ;
-		}else if(write == "eventsWeight"){
-		cout<<setprecision(2) << tt_2d->Integral(0,tt_2d->GetNbinsX()+1 ,binMin[i],bin+1)*weight << " & " ;
-		}else if(write == "purity"){
-		cout<<setprecision(2) << purity[i] << " & " ;
-		}else if(write == "stability"){
-		cout<<setprecision(2) << stability[i] << " & " ;
-		}
-		
-		i++;
-		binMin[i] = bin;
-		}
-		
-		}
+	}else{
+	if(bin == binCho[i]/4){
+	
+	if(write == "bin"){
+	cout << binCho[i] << " & " ;
+        }else if(write == "events"){
+	cout<<setprecision(4) << tt_2d->Integral(0,tt_2d->GetNbinsX()+1 ,binMin[i],bin+1) << " & " ;
+	}else if(write == "eventsWeight"){
+	cout<<setprecision(2) << tt_2d->Integral(0,tt_2d->GetNbinsX() ,binMin[i],bin)*weight << " & " ;
+	}else if(write == "purity"){
+	cout<<setprecision(2) << purity[i] << " & " ;
+	}else if(write == "stability"){
+	cout<<setprecision(2) << stability[i] << " & " ;
+	}
+	
+	i++;
+	binMin[i] = bin;
+	}
+	
+	}
 
 }
 

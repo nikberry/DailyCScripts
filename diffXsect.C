@@ -328,7 +328,7 @@ cout << "cross section is:  " <<  totXsect[choice] << endl;
        TText* textPrelim = doPrelim(0.16,0.96); 
        textPrelim->Draw();
        
-       c->SaveAs("plots/Measurments/partialXsect"+Variable+".png");
+       c->SaveAs("plots/Measurments/partialXsect"+Variable+".pdf");
 	
 	//normailise
 	for(int i = 0; i < Nbins; i++){
@@ -369,7 +369,7 @@ cout << "cross section is:  " <<  totXsect[choice] << endl;
    
        textPrelim->Draw();
        
-       c2->SaveAs("plots/Measurments/partialXsectNorm"+Variable+".png");  
+       c2->SaveAs("plots/Measurments/partialXsectNorm"+Variable+".pdf");  
        
        	//normailise and differential
 	for(int i = 0; i < Nbins; i++){
@@ -408,7 +408,7 @@ cout << "cross section is:  " <<  totXsect[choice] << endl;
    
        textPrelim->Draw();
        
-       c3->SaveAs("plots/Measurments/partialXsectNormDiff"+Variable+".png"); 
+       c3->SaveAs("plots/Measurments/partialXsectNormDiff"+Variable+".pdf"); 
 
 
        
