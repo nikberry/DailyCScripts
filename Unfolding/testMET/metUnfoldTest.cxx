@@ -152,7 +152,7 @@ int kval= 3;
  	
 	tleg2->Draw("same");	
 	
-  c1->SaveAs("plots/bin/Nevents"+Variable+".png");
+  c1->SaveAs("plots/bin/partial"+Variable+".png");
 
    TCanvas *c2 = new TCanvas("Plot","Plot",900, 600);
 
@@ -185,7 +185,7 @@ int kval= 3;
  	
 	tleg2->Draw("same");	
 	
-  c2->SaveAs("plots/bin/normalised"+Variable+".png");
+  c2->SaveAs("plots/bin/norm"+Variable+".png");
 
    TCanvas *c3 = new TCanvas("Plot","Plot",900, 600);
    
@@ -214,7 +214,7 @@ int kval= 3;
  	
 	tleg2->Draw("same");	
 	
-  c3->SaveAs("plots/bin/Nevents"+Variable+".png");
+  c3->SaveAs("plots/bin/normDiff"+Variable+".png");
  
  for(int i = 0; i < Nbins; i++){
  cout <<  "bin: " << i+1 << " , val: " << reco->GetBinContent(i+1) << endl;

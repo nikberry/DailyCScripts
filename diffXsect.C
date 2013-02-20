@@ -12,44 +12,46 @@ void diffXsect(){
 
 //choice of systematic to look at
 int choice = 0;
+bool writeFile =true;
 
 //MET will need choice of variable at the top
-TString Variable ="_MET";
-int Nbins = 6;
-TString bins[6] = {"_bin_0-25", "_bin_25-45", "_bin_45-70", "_bin_70-100", "_bin_100-150", "_bin_150-inf"};
-double width[6] = {25, 20, 25, 30, 50, 100};
-double xbins[7] = {1,25,45,70,100,150, 250}; 
-TString varBin = "Binned_MET_Analysis/patType1CorrectedPFMet";
-TString Xtitle = "MET [GeV]";
+// TString Variable ="_MET";
+// int Nbins = 6;
+// TString bins[6] = {"_bin_0-25", "_bin_25-45", "_bin_45-70", "_bin_70-100", "_bin_100-150", "_bin_150-inf"};
+// double width[6] = {25, 20, 25, 30, 50, 100};
+// double xbins[7] = {1,25,45,70,100,150, 250}; 
+// TString varBin = "Binned_MET_Analysis/patType1CorrectedPFMet";
+// TString Xtitle = "MET [GeV]";
 
 //HT
 // TString Variable ="_HT";
 // int Nbins = 8;
-// TString bins[8] = {"0-50", "50-150", "150-250", "250-350", "350-450", "450-650", "650-1100", "1100-inf"};
+// TString bins[8] = {"_bin_0-50", "_bin_50-150", "_bin_150-250", "_bin_250-350", "_bin_350-450", "_bin_450-650", "_bin_650-1100", "_bin_1100-inf"};
 // double width[8] = {50,100,100,100,100,200,450,400};
 // double xbins[9] = {1,50,150,250,350,450,650,1100, 1500}; 
-// TString varBin = "Binned_HT_Analysis/HT_bin_";
+// TString varBin = "Binned_HT_Analysis/HT";
 // TString Xtitle = "HT [GeV]";
 
 //ST
-// TString Variable ="_ST";
-// int Nbins = 8;
-// TString bins[8] = {"0-150", "150-250", "250-350", "350-450", "450-550", "550-750", "750-1250", "1250-inf"};
-// double width[8] = {150,100,100,100,100,200,500,500};
-// double xbins[9] = {1,150,250,350,450,550,750,1250, 1750}; 
-// TString varBin = "Binned_ST_Analysis/ST_with_RecoMET_bin_";
-// TString Xtitle = "ST [GeV]";
+TString Variable ="_ST";
+int Nbins = 8;
+TString bins[8] = {"_bin_0-150", "_bin_150-250", "_bin_250-350", "_bin_350-450", "_bin_450-550", "_bin_550-750", "_bin_750-1250", "_bin_1250-inf"};
+double width[8] = {150,100,100,100,100,200,500,500};
+double xbins[9] = {1,150,250,350,450,550,750,1250, 1750}; 
+TString varBin = "Binned_ST_Analysis/ST_with_patType1CorrectedPFMet";
+TString Xtitle = "ST [GeV]";
+
 //MT
 // TString Variable ="_MT";
 // int Nbins = 5;
-// TString bins[5] = {"0-40", "40-65", "65-85", "85-150", "150-inf"};
+// TString bins[5] = {"_bin_0-40", "_bin_40-65", "_bin_65-85", "_bin_85-150", "_bin_150-inf"};
 // double width[5] = {40,25,20,65,50};
 // double xbins[6] = {1,40,65,85,150,200}; 
-// TString varBin = "Binned_MT_Analysis/MT_with_RecoMET_bin_";
+// TString varBin = "Binned_MT_Analysis/MT_with_patType1CorrectedPFMet";
 // TString Xtitle = "M(W)_{T} [GeV]";
 
-int Nsys = 1;
-//int Nsys = 15;
+//int Nsys = 1;
+int Nsys = 27;
 
 //from fit
 double NfitVal[Nbins][Nsys];
@@ -86,8 +88,8 @@ totXsect[sys]= 0;
 int rebinFact = 1;
 //for ttbar total
 TH1D* tt_tot = getSample("TTJet", lumi*225.197/6920475, rebinFact, "Muon", dir);
-TH1D* mcnlo_tot = getSample("TTJet_MCNLO", lumi*225.197/6920475, rebinFact, "Muon", dir);
-TH1D* powheg_tot = getSample("TTJet_POWHEG", lumi*225.197/6920475, rebinFact, "Muon", dir);
+TH1D* mcnlo_tot = getSample("TTJet_MCNLO", lumi*225.197/6920475, rebinFact, "Muon", "central");
+TH1D* powheg_tot = getSample("TTJet_POWHEG", lumi*225.197/6920475, rebinFact, "Muon", "central");
 //loop over bins of distribution
 for(int i = 0; i < Nbins; i++){
 
@@ -109,8 +111,8 @@ inclW = true;
 
 cout <<  bin << endl;
 TH1D* tt = getSample("TTJet", lumi*225.197/6920475, rebinFact, bin, dir);
-TH1D* tt_mcnlo = getSample("TTJet_MCNLO", lumi*225.197/6920475, rebinFact, bin, dir);
-TH1D* tt_powheg = getSample("TTJet_POWHEG", lumi*225.197/6920475, rebinFact, bin, dir);
+TH1D* tt_mcnlo = getSample("TTJet_MCNLO", lumi*225.197/6920475, rebinFact, bin, "central");
+TH1D* tt_powheg = getSample("TTJet_POWHEG", lumi*225.197/6920475, rebinFact, bin, "central");
 
 TH1D* top_t = getSample("T_t-channel", lumi*56.4/3757707, rebinFact, bin, dir);
 TH1D* top_tw = getSample("T_tW-channel", lumi*11.1/497395, rebinFact, bin, dir);
@@ -246,8 +248,10 @@ totXsect[sys] += sigmaVal[i][sys];
 		
 	resultsfile.cd();
 	}
-	     
-       //resultsfile.Write();
+	
+	if(writeFile ==true)     
+       		resultsfile.Write();
+       
        resultsfile.Close();
 
 
@@ -345,7 +349,7 @@ cout << "cross section is:  " <<  totXsect[choice] << endl;
 	powheg->SetBinError(i+1,0.0/225.197);
 	
 	}	
-	
+	delete c;
        
        TCanvas *c2= new TCanvas("c2","c2",10,10,800,600);
   
@@ -385,7 +389,7 @@ cout << "cross section is:  " <<  totXsect[choice] << endl;
 	powheg->SetBinContent(i+1,powhegVals[i][choice]/(225.197*width));
 	powheg->SetBinError(i+1,0.0/(225.197*width));
 	}
-       
+       delete c2;
        
         TCanvas *c3= new TCanvas("c3","c3",10,10,800,600);
   
@@ -409,7 +413,7 @@ cout << "cross section is:  " <<  totXsect[choice] << endl;
        textPrelim->Draw();
        
        c3->SaveAs("plots/Measurments/partialXsectNormDiff"+Variable+".pdf"); 
-
+	delete c3;
 
        
 }
