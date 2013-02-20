@@ -10,15 +10,41 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include "TROOT.h"
 
-TH1D* getSample(TString sample, double weight, TString Obj, TString Variable, TString Isolation, int RebinFact);
+TH1D* getSample(TString sample, double weight, TString Obj, TString Variable, TString Isolation, int RebinFact, TString Systematic);
 TH1D* getQCD(TString Obj, TString Variable, int RebinFact);
 TText* doPrelim(float x, float y);
 
-TH1D* getSample(TString sample, double weight,TString Obj, TString Variable, TString Isolation,int rebinFact){
-	TString dir = "rootFilesV2/central/";
-	TFile* file = new TFile(dir + sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root");
+
+TH1D* getSample(TString sample, double weight, TString Obj, TString Variable, TString Isolation, int rebinFact, TString Systematic){
+	TString dir = "rootFilesV2/"+ Systematic +"/";
+	
+	TString syst = "";
+	
+	if(Systematic == "BJet_down")
+		syst = "_minusBJet";
+	else if(Systematic == "BJet_up")
+		syst = "_plusBjet";
+	else if(Systematic == "JES_down")
+		syst = "_minusJES";
+	else if(Systematic == "JES_up")
+		syst = "_plusJES";
+	else if(Systematic == "LightJet_up")
+		syst = "_plusLightJet";	
+	else if(Systematic == "LightJet_down")
+		syst = "_minusLightJet";							
+	else if(Systematic == "PU_down")
+		syst = "_PU_65835mb";
+	else if(Systematic == "PU_up")
+		syst = "_PU_72765mb";
+	else	
+		syst = "";
+		
+	TFile* file = new TFile(dir + sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET"+syst+".root");
 	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
+
+	cout << dir + sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET"+syst+".root" << endl;
 
 	TH1D* plot = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"2btags");
 	TH1D* plot2 = (TH1D*) file->Get("TTbar_plus_X_analysis/MuPlusJets/"+Isolation+Obj+Variable+"3btags");
@@ -48,7 +74,10 @@ TH1D* getSample(TString sample, double weight,TString Obj, TString Variable, TSt
 
 	//plot->Scale(weight);
 	plot->Rebin(rebinFact);
-
+	
+	plot->SetDirectory(gROOT);
+	file->Close();
+	
 	return plot;
 
 }
@@ -66,6 +95,9 @@ TH1D* getQCD(TString Obj, TString Variable, int rebinFact){
     	
 	plot->Scale(1/plot->Integral());
 	plot->Rebin(rebinFact);
+	
+	plot->SetDirectory(gROOT);
+	file->Close();
 	
 	return plot;
 
