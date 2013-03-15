@@ -38,8 +38,10 @@ TH1D* getSample(TString sample, double weight, TString Obj, TString Variable, TS
 		syst = "_PU_65835mb";
 	else if(Systematic == "PU_up")
 		syst = "_PU_72765mb";
-	else	
-		syst = "";
+	else if(Systematic == "central")
+		syst = "";	
+	//else	
+		//syst = "";
 		
 	TFile* file = new TFile(dir + sample + "_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET"+syst+".root");
 	//TDirectoryFile* folder = (TDirectoryFile*) file->Get("TTbarPlusMetAnalysis/QCD No Iso/Muon/");
